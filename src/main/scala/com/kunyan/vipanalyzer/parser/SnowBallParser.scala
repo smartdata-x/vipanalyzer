@@ -50,7 +50,6 @@ object SnowBallParser {
     val json = "{\"id\":\"\", \"attrid\":\"%d\", \"cookie\":\"\", \"referer\":\"\", \"url\":\"%s\", \"timestamp\":\"%s\"}"
 
     json.format(Platform.Snowball.id, url, new Date().getTime.toString)
-
   }
 
 }
