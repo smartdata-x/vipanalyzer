@@ -1,3 +1,5 @@
+mainClass in (Compile, packageBin) := Some("com.kunyan.vipanalyzer.Scheduler")
+
 name := "vipanalyzer"
 
 version := "1.0"
@@ -7,6 +9,8 @@ scalaVersion := "2.10.4"
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 
 libraryDependencies += "org.jsoup" % "jsoup" % "1.8.3"
+
+libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.38"
 
 libraryDependencies += "com.ibm.icu" % "icu4j" % "56.1"
 

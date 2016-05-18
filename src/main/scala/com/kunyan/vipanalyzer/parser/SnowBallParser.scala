@@ -17,8 +17,9 @@ object SnowBallParser {
   /**
     * 提取粉丝数和用户 id 存入数据库
     * 向消息队列发送需要继续爬取的大V主页
+    *
     * @param jsonString json 格式的消息字符串
-    * @param lazyConn 连接容器
+    * @param lazyConn   连接容器
     */
   def parse(jsonString: String, lazyConn: LazyConnections, topic: String): Unit = {
 
@@ -34,7 +35,7 @@ object SnowBallParser {
       val url = s"https://xueqiu.com/friendships/groups/members.json?page=1&count=2000&uid=$id&gid=0"
       lazyConn.sendTask(topic, getUrlJsonString(url))
 
-      DBUtil.insertUserInfo(id, followersNumber, lazyConn)
+      DBUtil.insertCNFOL(id, followersNumber, lazyConn)
     })
 
   }
@@ -46,10 +47,8 @@ object SnowBallParser {
     * @return json格式的消息的字符串
     */
   def getUrlJsonString(url: String): String = {
-
     val json = "{\"id\":\"\", \"attrid\":\"%d\", \"cookie\":\"\", \"referer\":\"\", \"url\":\"%s\", \"timestamp\":\"%s\"}"
-
-    json.format(Platform.Snowball.id, url, new Date().getTime.toString)
+    json.format(Platform.SNOW_BALL.id, url, new Date().getTime.toString)
   }
 
 }

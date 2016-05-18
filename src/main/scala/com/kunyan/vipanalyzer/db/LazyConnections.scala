@@ -3,6 +3,7 @@ package com.kunyan.vipanalyzer.db
 import java.sql.{DriverManager, PreparedStatement}
 import java.util.Properties
 
+import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.logger.VALogger
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
@@ -28,6 +29,8 @@ class LazyConnections(createHbaseConnection: () => org.apache.hadoop.hbase.clien
 
     try {
       producer.send(message)
+      VALogger.warn(value)
+      VALogger.warn(Scheduler.urlSet.size.toString)
     } catch {
       case e: Exception =>
         e.printStackTrace()
@@ -53,7 +56,6 @@ class LazyConnections(createHbaseConnection: () => org.apache.hadoop.hbase.clien
 object LazyConnections {
 
   def apply(configFile: Elem): LazyConnections = {
-
 
     val createHbaseConnection = () => {
 
@@ -83,14 +85,14 @@ object LazyConnections {
       val config = new ProducerConfig(props)
       val producer = new Producer[String, String](config)
 
-      sys.addShutdownHook{
+      sys.addShutdownHook {
         producer.close()
       }
 
       producer
     }
 
-    val createMySQLConnection = () => {
+    val createCNFOLPs = () => {
 
       Class.forName("com.mysql.jdbc.Driver")
       val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
@@ -101,10 +103,38 @@ object LazyConnections {
 
       VALogger.warn("MySQL connection created.")
 
-      connection.prepareStatement("INSERT INTO news_summary (user_id, followers_count) VALUES (?,?)")
+      connection.prepareStatement("INSERT INTO article_cnfol (user_id, title, recommend, time, reproduce, comment, url) VALUES (?,?,?,?,?,?,?)")
     }
 
-    new LazyConnections(createHbaseConnection, createProducer, createMySQLConnection)
+    val createMOERPs = () => {
+
+      Class.forName("com.mysql.jdbc.Driver")
+      val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
+
+      sys.addShutdownHook {
+        connection.close()
+      }
+
+      VALogger.warn("MySQL connection created.")
+
+      connection.prepareStatement("INSERT INTO vip_moer (user_id, followers_count, official_vip, name, introduction, home_page, portrait, field) VALUES (?,?,?,?,?,?,?,?)")
+    }
+
+    val createTGBPs = () => {
+
+      Class.forName("com.mysql.jdbc.Driver")
+      val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
+
+      sys.addShutdownHook {
+        connection.close()
+      }
+
+      VALogger.warn("MySQL connection created.")
+
+      connection.prepareStatement("INSERT INTO user_taoguba (user_id, marrow, recommend, vip) VALUES (?,?)")
+    }
+
+    new LazyConnections(createHbaseConnection, createProducer, createMOERPs)
 
   }
 }
