@@ -1,4 +1,4 @@
-package com.kunyan.vipanalyzer.task
+package com.kunyan.vipanalyzer.task.moer
 
 import java.sql.DriverManager
 
