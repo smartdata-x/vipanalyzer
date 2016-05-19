@@ -4,6 +4,7 @@ import java.sql.DriverManager
 
 import com.ibm.icu.text.CharsetDetector
 import com.kunyan.vipanalyzer.Scheduler
+import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import org.apache.hadoop.hbase.client.Get
@@ -161,6 +162,28 @@ object DBUtil {
         e.printStackTrace()
     }
 
+  }
+
+  /**
+    * 雪球用户数据探索
+    */
+  def insertSnowBallUserInfo(url: String, userId: String, followersCount: Int, lazyConn: LazyConnections, topic: String): Unit = {
+
+    val prep = lazyConn.mysqlConn
+
+    try {
+
+      prep.setString(1, userId)
+      prep.setInt(2, followersCount)
+      prep.executeUpdate
+
+    } catch {
+
+      case e: Exception =>
+        VALogger.error(s"向MySQL插入数据失败: $userId")
+        e.printStackTrace()
+
+    }
   }
 
   /**

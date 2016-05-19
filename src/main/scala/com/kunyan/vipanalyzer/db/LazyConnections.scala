@@ -132,7 +132,21 @@ object LazyConnections {
       connection.prepareStatement("INSERT INTO vip_taoguba (user_id, followers_count, vip_auth, name, introduction, home_page, portrait, marrow, recommend) VALUES (?,?,?,?,?,?,?,?,?)")
     }
 
-    new LazyConnections(createHbaseConnection, createProducer, createTGBPs)
+    val createSnowBallPs = () => {
+
+      Class.forName("com.mysql.jdbc.Driver")
+      val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
+
+      sys.addShutdownHook {
+        connection.close()
+      }
+
+      VALogger.warn("MySQL connection created.")
+
+      connection.prepareStatement("INSERT INTO user_snowball (user_id, followers_count) VALUES (?,?)")
+    }
+
+    new LazyConnections(createHbaseConnection, createProducer, createSnowBallPs)
 
   }
 }

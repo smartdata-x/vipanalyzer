@@ -1,10 +1,10 @@
 package com.kunyan.vipanalyzer.parser
 
-import java.util.Date
-
+import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
-import com.kunyan.vipanalyzer.util.DBUtil
+import com.kunyan.vipanalyzer.logger.VALogger
+import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
 
 import scala.util.parsing.json.JSON
 
@@ -14,6 +14,29 @@ import scala.util.parsing.json.JSON
   */
 object SnowBallParser {
 
+  val URL_PREFIX = "http://xueqiu.com/friendships/groups/members.json?page=1&count=2000&gid=0&uid="
+
+  def parse(url: String, html: String, lazyConn: LazyConnections, topic: String): Unit = {
+
+    if (url.contains("xueqiu.com/friendships/groups/members.json")) {
+
+      if (!Scheduler.urlSet.contains(url)) {
+
+        saveUserInfo(html, lazyConn, topic)
+        val message = StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 1)
+        lazyConn.sendTask(topic, message)
+        Scheduler.urlSet.add(url)
+
+      }
+
+    } else {
+
+      VALogger.error(s"Invalid url: $url")
+
+    }
+
+  }
+
   /**
     * 提取粉丝数和用户 id 存入数据库
     * 向消息队列发送需要继续爬取的大V主页
@@ -21,7 +44,7 @@ object SnowBallParser {
     * @param jsonString json 格式的消息字符串
     * @param lazyConn   连接容器
     */
-  def parse(jsonString: String, lazyConn: LazyConnections, topic: String): Unit = {
+  def saveUserInfo(jsonString: String, lazyConn: LazyConnections, topic: String): Unit = {
 
     val json = JSON.parseFull(jsonString)
     val map = json.get.asInstanceOf[Map[String, String]]
@@ -31,24 +54,22 @@ object SnowBallParser {
 
       val id = x.get("id").get.asInstanceOf[Double].toLong.toString
       val followersNumber = x.get("followers_count").get.asInstanceOf[Double].toInt
+      val url = URL_PREFIX + id
 
-      val url = s"https://xueqiu.com/friendships/groups/members.json?page=1&count=2000&uid=$id&gid=0"
-      lazyConn.sendTask(topic, getUrlJsonString(url))
+      if (!Scheduler.urlSet.contains(url) && followersNumber > 100) {
+        lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 0))
+        DBUtil.insertSnowBallUserInfo(url, id, followersNumber, lazyConn, topic)
+      }
 
-      DBUtil.insertCNFOL(id, followersNumber, lazyConn)
     })
 
   }
 
-  /**
-    * 拼接往algo_vip topic 发的消息的json字符串
-    *
-    * @param url 消息中的帖子的url
-    * @return json格式的消息的字符串
-    */
-  def getUrlJsonString(url: String): String = {
-    val json = "{\"id\":\"\", \"attrid\":\"%d\", \"cookie\":\"\", \"referer\":\"\", \"url\":\"%s\", \"timestamp\":\"%s\"}"
-    json.format(Platform.SNOW_BALL.id, url, new Date().getTime.toString)
+  def sendFirstPatch(lazyConn: LazyConnections, topic: String): Unit = {
+
+    val url = URL_PREFIX + "5964068708"
+    lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 0))
+
   }
 
 }

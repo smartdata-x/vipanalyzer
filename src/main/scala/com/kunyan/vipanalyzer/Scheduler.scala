@@ -24,7 +24,7 @@ object Scheduler {
 
   def main(args: Array[String]): Unit = {
 
-    val sparkConf = new SparkConf().setMaster("local")
+    val sparkConf = new SparkConf().setMaster("local[4]")
       .setAppName("VIP ANALYZER")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2000")
@@ -35,6 +35,7 @@ object Scheduler {
 
     val configFile = XML.loadFile(path)
     val connectionsBr = ssc.sparkContext.broadcast(LazyConnections(configFile))
+    val lazyConn = LazyConnections(configFile)
 //    DBUtil.initUrlSet(configFile)
 
     val groupId = (configFile \ "kafka" \ "vip").text
@@ -51,9 +52,7 @@ object Scheduler {
 
     LogManager.getRootLogger.setLevel(Level.WARN)
 
-//    TaoGuBaParser.sendExistingUrls(configFile, LazyConnections(configFile), sendTopic)
-//    TaoGuBaParser.sendFirstPatchUsers(LazyConnections(configFile),sendTopic)
-    TaoGuBaParser.saveVipInfo(configFile, LazyConnections(configFile), sendTopic)
+    SnowBallParser.sendFirstPatch(lazyConn, sendTopic)
 
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
@@ -83,13 +82,12 @@ object Scheduler {
         val attrId = map.get("attr_id").get.toInt
         val tableName = map.get("key_name").get
         val rowkey = map.get("pos_name").get
-
         val result = DBUtil.query(tableName, rowkey, lazyConn)
 
         attrId match {
 
           case id if id == Platform.SNOW_BALL.id =>
-            SnowBallParser.parse(result._2, lazyConn, topic)
+            SnowBallParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.CNFOL.id =>
             CNFOLParser.parseBlog(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
