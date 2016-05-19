@@ -112,7 +112,7 @@ object DBUtil {
 
   }
 
-  def insertTGB(userId: String, data: (Int, Int, Boolean), lazyConn: LazyConnections): Unit = {
+  def insertTGB(userId: String, data: (Int, Int, Int), lazyConn: LazyConnections): Boolean = {
 
     val prep = lazyConn.mysqlConn
 
@@ -121,15 +121,17 @@ object DBUtil {
       prep.setString(1, userId)
       prep.setInt(2, data._1)
       prep.setInt(3, data._2)
-      prep.setBoolean(4, data._3)
+      prep.setInt(4, data._3)
       prep.executeUpdate
+
+      true
 
     } catch {
 
       case e: Exception =>
         VALogger.error("向MySQL插入数据失败")
         VALogger.exception(e)
-
+        false
     }
 
   }
