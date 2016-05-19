@@ -7,6 +7,7 @@ import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
+import com.kunyan.vipanalyzer.parser.SnowBallParser
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.log4j.{Level, LogManager}
@@ -215,7 +216,7 @@ object DBUtil {
     } catch {
 
       case e: Exception =>
-        e.printStackTrace()
+//        e.printStackTrace()
         null
 
     }
@@ -233,13 +234,13 @@ object DBUtil {
 
     LogManager.getRootLogger.setLevel(Level.WARN)
 
-    val sql = s"select home_page from vip_moer"
+    val sql = s"select user_id from user_snowball"
     val statement = connection.createStatement()
     val result = statement.executeQuery(sql)
 
     while (result.next()) {
-      val homePage = result.getString("home_page")
-      Scheduler.urlSet.add(homePage)
+      val userId = result.getString("user_id")
+      Scheduler.urlSet.add(SnowBallParser.URL_PREFIX + userId)
     }
 
     statement.close()

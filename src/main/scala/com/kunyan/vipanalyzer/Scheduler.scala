@@ -36,7 +36,6 @@ object Scheduler {
     val configFile = XML.loadFile(path)
     val connectionsBr = ssc.sparkContext.broadcast(LazyConnections(configFile))
     val lazyConn = LazyConnections(configFile)
-//    DBUtil.initUrlSet(configFile)
 
     val groupId = (configFile \ "kafka" \ "vip").text
     val brokerList = (configFile \ "kafka" \ "brokerList").text
@@ -52,6 +51,7 @@ object Scheduler {
 
     LogManager.getRootLogger.setLevel(Level.WARN)
 
+//    DBUtil.initUrlSet(configFile)
     SnowBallParser.sendFirstPatch(lazyConn, sendTopic)
 
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {

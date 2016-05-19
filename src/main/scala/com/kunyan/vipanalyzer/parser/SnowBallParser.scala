@@ -22,7 +22,7 @@ object SnowBallParser {
 
       if (!Scheduler.urlSet.contains(url)) {
 
-        saveUserInfo(html, lazyConn, topic)
+        saveUserInfos(url, html, lazyConn, topic)
         val message = StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 1)
         lazyConn.sendTask(topic, message)
         Scheduler.urlSet.add(url)
@@ -44,7 +44,9 @@ object SnowBallParser {
     * @param jsonString json 格式的消息字符串
     * @param lazyConn   连接容器
     */
-  def saveUserInfo(jsonString: String, lazyConn: LazyConnections, topic: String): Unit = {
+  def saveUserInfos(url: String, jsonString: String, lazyConn: LazyConnections, topic: String): Unit = {
+
+    Scheduler.urlSet.add(url)
 
     val json = JSON.parseFull(jsonString)
     val map = json.get.asInstanceOf[Map[String, String]]
@@ -57,8 +59,21 @@ object SnowBallParser {
       val url = URL_PREFIX + id
 
       if (!Scheduler.urlSet.contains(url) && followersNumber > 100) {
-        lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 0))
+
         DBUtil.insertSnowBallUserInfo(url, id, followersNumber, lazyConn, topic)
+
+        val result = DBUtil.query(Platform.SNOW_BALL.id.toString, url, lazyConn)
+
+        if (result == null || result._1.isEmpty || result._2.isEmpty) {
+
+          lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 2))
+
+        } else {
+
+          saveUserInfos(result._1, result._2, lazyConn, topic)
+
+        }
+
       }
 
     })
@@ -67,8 +82,21 @@ object SnowBallParser {
 
   def sendFirstPatch(lazyConn: LazyConnections, topic: String): Unit = {
 
-    val url = URL_PREFIX + "5964068708"
-    lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 0))
+    val url = URL_PREFIX + "4832309147"
+    val result = DBUtil.query(Platform.SNOW_BALL.id.toString, url, lazyConn)
+
+    if (result == null || result._1.isEmpty || result._2.isEmpty) {
+
+      lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 2))
+
+    } else {
+
+      saveUserInfos(result._1, result._2, lazyConn, topic)
+      val message = StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 1)
+      lazyConn.sendTask(topic, message)
+      Scheduler.urlSet.add(url)
+
+    }
 
   }
 
