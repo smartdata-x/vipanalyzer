@@ -29,8 +29,6 @@ class LazyConnections(createHbaseConnection: () => org.apache.hadoop.hbase.clien
 
     try {
       producer.send(message)
-      VALogger.warn(value)
-      VALogger.warn(Scheduler.urlSet.size.toString)
     } catch {
       case e: Exception =>
         e.printStackTrace()
@@ -131,10 +129,10 @@ object LazyConnections {
 
       VALogger.warn("MySQL connection created.")
 
-      connection.prepareStatement("INSERT INTO user_taoguba (user_id, marrow, recommend, vip) VALUES (?,?)")
+      connection.prepareStatement("INSERT INTO vip_taoguba (user_id, followers_count, vip_auth, name, introduction, home_page, portrait, marrow, recommend) VALUES (?,?,?,?,?,?,?,?,?)")
     }
 
-    new LazyConnections(createHbaseConnection, createProducer, createMOERPs)
+    new LazyConnections(createHbaseConnection, createProducer, createTGBPs)
 
   }
 }

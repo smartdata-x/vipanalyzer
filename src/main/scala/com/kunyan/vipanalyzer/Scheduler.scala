@@ -20,7 +20,7 @@ import scala.xml.XML
   */
 object Scheduler {
 
-  var urlSet = mutable.Set[String]("http://blog.cnfol.com/zhongj/myfocus/friend")
+  var urlSet = mutable.Set[String]()
 
   def main(args: Array[String]): Unit = {
 
@@ -35,7 +35,7 @@ object Scheduler {
 
     val configFile = XML.loadFile(path)
     val connectionsBr = ssc.sparkContext.broadcast(LazyConnections(configFile))
-    DBUtil.initUrlSet(configFile)
+//    DBUtil.initUrlSet(configFile)
 
     val groupId = (configFile \ "kafka" \ "vip").text
     val brokerList = (configFile \ "kafka" \ "brokerList").text
@@ -51,7 +51,9 @@ object Scheduler {
 
     LogManager.getRootLogger.setLevel(Level.WARN)
 
-    MoerParser.sendFirstPatch(sendTopic, LazyConnections(configFile))
+//    TaoGuBaParser.sendExistingUrls(configFile, LazyConnections(configFile), sendTopic)
+//    TaoGuBaParser.sendFirstPatchUsers(LazyConnections(configFile),sendTopic)
+    TaoGuBaParser.saveVipInfo(configFile, LazyConnections(configFile), sendTopic)
 
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
@@ -85,6 +87,7 @@ object Scheduler {
         val result = DBUtil.query(tableName, rowkey, lazyConn)
 
         attrId match {
+
           case id if id == Platform.SNOW_BALL.id =>
             SnowBallParser.parse(result._2, lazyConn, topic)
           case id if id == Platform.CNFOL.id =>
@@ -93,6 +96,7 @@ object Scheduler {
             TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.MOER.id =>
             MoerParser.parse(result._1, result._2, lazyConn, topic)
+
         }
 
       } catch {

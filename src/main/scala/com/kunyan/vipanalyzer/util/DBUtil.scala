@@ -136,6 +136,33 @@ object DBUtil {
 
   }
 
+  def saveTGBVip(userId: String, followersCount: Int, vip: Int, name: String, introduction: String, homePage: String, portrait: String, marrow: Int, recommend: Int, lazyConn: LazyConnections): Unit = {
+
+    val prep = lazyConn.mysqlConn
+
+    try {
+
+      prep.setString(1, userId)
+      prep.setInt(2, followersCount)
+      prep.setInt(3, vip)
+      prep.setString(4, name)
+      prep.setString(5, introduction)
+      prep.setString(6, homePage)
+      prep.setString(7, portrait)
+      prep.setInt(8, marrow)
+      prep.setInt(9, recommend)
+
+      prep.executeUpdate
+
+    } catch {
+
+      case e: Exception =>
+        VALogger.error(s"向MySQL插入数据失败: $userId")
+        e.printStackTrace()
+    }
+
+  }
+
   /**
     * 根据表名和rowkey从hbase中获取数据
     *

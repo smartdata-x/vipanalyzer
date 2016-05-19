@@ -21,7 +21,8 @@ object VALogger {
   }
 
   def warn(msg: String): Unit = {
-    logger.warn(msg)
+//    logger.warn(msg)
+    println(msg)
   }
 
   def info(msg: String): Unit = {
