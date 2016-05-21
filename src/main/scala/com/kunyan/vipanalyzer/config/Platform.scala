@@ -14,4 +14,6 @@ object Platform extends Enumeration {
 
   val TAOGUBA = Value(40004, "淘股吧")
 
+  val WEIBO = Value(40005, "微博")
+
 }
