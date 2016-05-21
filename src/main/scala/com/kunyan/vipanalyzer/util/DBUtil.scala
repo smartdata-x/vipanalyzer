@@ -12,7 +12,7 @@ import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.log4j.{Level, LogManager}
 
-import scala.xml.Elem
+import scala.xml.{XML, Elem}
 
 /**
   * Created by yang on 5/12/16.
@@ -185,6 +185,41 @@ object DBUtil {
         e.printStackTrace()
 
     }
+  }
+
+  /**
+    * 保存雪球 vip 信息
+    */
+  def insertSnowBallVipInfo(userId: String, followersCount: Int, name: String, introduction: String, url: String, portrait: String, lazyConn: LazyConnections): Unit = {
+
+    var prep = lazyConn.mysqlConn
+    if (prep.isClosed) {
+      Class.forName("com.mysql.jdbc.Driver")
+      val configFile = XML.loadFile("/Users/yang/code/SmartData/vipanalyzer/src/main/resources/config.xml")
+      val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
+      prep = connection.prepareStatement("INSERT INTO vip_snowball (user_id, followers_count, name, introduction, home_page, portrait) VALUES (?,?,?,?,?,?)")
+    }
+
+    try {
+
+      prep.setString(1, userId)
+      prep.setInt(2, followersCount)
+      prep.setString(3, name)
+      prep.setString(4, introduction)
+      prep.setString(5, url)
+      prep.setString(6, portrait)
+      prep.executeUpdate
+
+      Scheduler.urlSet.add(userId)
+
+    } catch {
+
+      case e: Exception =>
+        VALogger.error("向MySQL插入数据失败")
+        VALogger.exception(e)
+
+    }
+
   }
 
   /**
