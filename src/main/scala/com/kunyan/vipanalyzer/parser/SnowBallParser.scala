@@ -59,8 +59,12 @@ object SnowBallParser {
 
     statues.foreach(x => {
 
-      val userId = x.get("user_id").get.asInstanceOf[Double].toInt.toString
-      val title = x.get("title").get.asInstanceOf[String]
+      val userId = x.get("user_id").get.asInstanceOf[Double].toLong.toString
+
+      var title: String = x.get("title").get.asInstanceOf[String]
+      if (title == null)
+        title = ""
+
       val retweet = x.get("retweet_count").get.asInstanceOf[Double].toInt
       val reply = x.get("reply_count").get.asInstanceOf[Double].toInt
       val url = "http://xueqiu.com/about/mobile-xueqiu/" + x.get("id").get.asInstanceOf[Double].toInt.toString

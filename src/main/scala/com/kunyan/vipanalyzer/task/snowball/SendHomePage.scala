@@ -35,19 +35,38 @@ object SendHomePage {
     val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
     val sql = "select user_id from vip_snowball"
     val statement = connection.createStatement()
+    val queryStatement = connection.createStatement()
     val datas = statement.executeQuery(sql)
+    val query = "select count(*) from temp_article_snowball where user_id="
+
+    var executedCount = 0
 
     while (datas.next()) {
 
+      executedCount += 1
+      println(executedCount)
+
       val userId = datas.getString("user_id")
-      val homePage = s"https://xueqiu.com/$userId"
 
-      val result = DBUtil.query(Platform.SNOW_BALL.id.toString, homePage, lazyConn)
+      val countResult = queryStatement.executeQuery(query + userId)
 
-      if (result == null) {
-        lazyConn.sendTask(sendTopic, StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, homePage, 2))
-      } else {
-        SnowBallParser.extractArticles(result._1, result._2, lazyConn, sendTopic)
+      while (countResult.next) {
+
+        val count = countResult.getInt(1)
+
+        if (count == 0) {
+
+          val homePage = s"https://xueqiu.com/$userId"
+          val result = DBUtil.query(Platform.SNOW_BALL.id.toString, homePage, lazyConn)
+
+          if (result == null) {
+            lazyConn.sendTask(sendTopic, StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, homePage, 2))
+          } else {
+            SnowBallParser.extractArticles(result._1, result._2, lazyConn, sendTopic)
+          }
+
+        }
+
       }
 
     }
