@@ -2,7 +2,6 @@ package com.kunyan.vipanalyzer.task.snowball
 
 import java.sql.DriverManager
 
-import com.kunyan.vipanalyzer.task.moer.UpdateMoerFollowersCount._
 import org.apache.log4j.{Level, LogManager}
 
 import scala.io.Source

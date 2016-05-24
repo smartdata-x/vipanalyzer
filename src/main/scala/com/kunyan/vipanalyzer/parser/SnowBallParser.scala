@@ -20,7 +20,7 @@ object SnowBallParser {
 
   def parse(url: String, html: String, lazyConn: LazyConnections, topic: String): Unit = {
 
-    if (url.contains("xueqiu.com/friendships/groups/members.json")) {
+    /*if (url.contains("xueqiu.com/friendships/groups/members.json")) {
 
       if (!Scheduler.urlSet.contains(url.split("uid=")(1))) {
 
@@ -42,7 +42,32 @@ object SnowBallParser {
 
       VALogger.error(s"Invalid url: $url")
 
-    }
+    }*/
+
+    extractArticles(url, html, lazyConn, topic)
+
+  }
+
+  /**
+    * 提取文章
+    */
+  def extractArticles(url: String, html: String, lazyConn: LazyConnections, topic: String): Unit = {
+
+    val jsonStr = html.split("SNB.data.statuses = ")(1).split(";\n  SNB.data.statusType")(0)
+    val map = JSON.parseFull(jsonStr).get.asInstanceOf[Map[String, Any]]
+    val statues = map.get("statuses").get.asInstanceOf[List[Map[String, Any]]]
+
+    statues.foreach(x => {
+
+      val userId = x.get("user_id").get.asInstanceOf[Double].toInt.toString
+      val title = x.get("title").get.asInstanceOf[String]
+      val retweet = x.get("retweet_count").get.asInstanceOf[Double].toInt
+      val reply = x.get("reply_count").get.asInstanceOf[Double].toInt
+      val url = "http://xueqiu.com/about/mobile-xueqiu/" + x.get("id").get.asInstanceOf[Double].toInt.toString
+      val ts = (x.get("created_at").get.asInstanceOf[Double].toLong / 1000).toInt
+
+      DBUtil.insertSnowBallArticle(userId, title, retweet, reply, url, ts, lazyConn)
+    })
 
   }
 
@@ -128,6 +153,7 @@ object SnowBallParser {
         val name = x.get("screen_name").get.asInstanceOf[String]
 
         var introduction: String = x.get("description").get.asInstanceOf[String]
+
         if (introduction == null)
           introduction = ""
 

@@ -143,7 +143,7 @@ object LazyConnections {
 
       VALogger.warn("MySQL connection created.")
 
-      connection.prepareStatement("INSERT INTO user_snowball (user_id, followers_count) VALUES (?,?)")
+      connection.prepareStatement("INSERT INTO article_snowball (user_id, title, retweet, reply, url, ts) VALUES (?,?,?,?,?,?)")
     }
 
     new LazyConnections(createHbaseConnection, createProducer, createSnowBallPs)

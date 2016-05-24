@@ -193,11 +193,14 @@ object DBUtil {
   def insertSnowBallVipInfo(userId: String, followersCount: Int, name: String, introduction: String, url: String, portrait: String, lazyConn: LazyConnections): Unit = {
 
     var prep = lazyConn.mysqlConn
+
     if (prep.isClosed) {
+
       Class.forName("com.mysql.jdbc.Driver")
       val configFile = XML.loadFile("/Users/yang/code/SmartData/vipanalyzer/src/main/resources/config.xml")
       val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
       prep = connection.prepareStatement("INSERT INTO vip_snowball (user_id, followers_count, name, introduction, home_page, portrait) VALUES (?,?,?,?,?,?)")
+
     }
 
     try {
@@ -253,6 +256,42 @@ object DBUtil {
       case e: Exception =>
 //        e.printStackTrace()
         null
+
+    }
+
+  }
+
+  /**
+    * 保存雪球文章信息
+    */
+  def insertSnowBallArticle(userId: String, title: String, retweet: Int, reply: Int, url: String, ts: Int, lazyConn: LazyConnections): Unit = {
+
+    var prep = lazyConn.mysqlConn
+
+    if (prep.isClosed) {
+
+      Class.forName("com.mysql.jdbc.Driver")
+      val configFile = XML.loadFile("/Users/yang/code/SmartData/vipanalyzer/src/main/resources/config.xml")
+      val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
+      prep = connection.prepareStatement("INSERT INTO article_snowball (user_id, title, retweet, reply, url, ts) VALUES (?,?,?,?,?,?)")
+
+    }
+
+    try {
+
+      prep.setString(1, userId)
+      prep.setString(2, title)
+      prep.setInt(3, retweet)
+      prep.setInt(4, reply)
+      prep.setString(5, url)
+      prep.setInt(6, ts)
+      prep.executeUpdate
+
+    } catch {
+
+      case e: Exception =>
+        VALogger.error("向MySQL插入数据失败")
+        VALogger.exception(e)
 
     }
 

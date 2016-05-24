@@ -27,7 +27,7 @@ object SendUrl {
 
     val lazyConn = LazyConnections(configFile)
 
-    sendHomePages(lazyConn, sendTopic)
+    sendList(lazyConn, sendTopic)
 
   }
 
