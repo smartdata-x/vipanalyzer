@@ -129,7 +129,7 @@ object LazyConnections {
 
       VALogger.warn("MySQL connection created.")
 
-      connection.prepareStatement("INSERT INTO vip_taoguba (user_id, followers_count, vip_auth, name, introduction, home_page, portrait, marrow, recommend) VALUES (?,?,?,?,?,?,?,?,?)")
+      connection.prepareStatement("INSERT INTO article_taoguba (user_id, title, recommend, `read`, comment, url, ts) VALUES (?,?,?,?,?,?,?)")
     }
 
     val createSnowBallPs = () => {
@@ -160,9 +160,10 @@ object LazyConnections {
       connection.prepareStatement("INSERT INTO vip_weibo (user_id, followers_count, official_vip, name, introduction, home_page, portrait) VALUES (?,?,?,?,?,?,?)")
     }
 
-    new LazyConnections(createHbaseConnection, createProducer, createWeiboPs)
+    new LazyConnections(createHbaseConnection, createProducer, createTGBPs)
 
   }
+
 }
 
 

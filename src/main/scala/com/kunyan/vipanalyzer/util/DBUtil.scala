@@ -165,6 +165,34 @@ object DBUtil {
 
   }
 
+  def insertTGBArticle(userId: String, title: String, recommend: Boolean, read: Int, comment: Int, url: String, ts: Long, lazyConn: LazyConnections): Unit = {
+
+    val prep = lazyConn.mysqlConn
+
+    try {
+
+      prep.setString(1, userId)
+      prep.setString(2, title)
+      if (recommend)
+        prep.setInt(3, 1)
+      else
+        prep.setInt(3, 0)
+      prep.setInt(4, read)
+      prep.setInt(5, comment)
+      prep.setString(6, url)
+      prep.setLong(7, ts)
+      prep.executeUpdate
+
+    } catch {
+
+      case e: Exception =>
+        VALogger.error("向MySQL插入数据失败")
+        VALogger.exception(e)
+
+    }
+
+  }
+
   /**
     * 雪球用户数据探索
     */

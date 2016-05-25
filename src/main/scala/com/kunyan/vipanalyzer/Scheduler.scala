@@ -53,9 +53,7 @@ object Scheduler {
 
     LogManager.getRootLogger.setLevel(Level.WARN)
 
-//    DBUtil.initUrlSet(configFile)
-//    SnowBallParser.extractVip(lazyConn, sendTopic)
-    SendUrl.sendHomePages(lazyConn, sendTopic)
+    TaoGuBaParser.saveArticleInfo(configFile, lazyConn, sendTopic)
 
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
