@@ -3,8 +3,9 @@ package com.kunyan.vipanalyzer
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
-import com.kunyan.vipanalyzer.parser.{TaoGuBaParser, MoerParser, CNFOLParser, SnowBallParser}
+import com.kunyan.vipanalyzer.parser._
 import com.kunyan.vipanalyzer.task.snowball.SendHomePage
+import com.kunyan.vipanalyzer.task.weibo.SendUrl
 import com.kunyan.vipanalyzer.util.DBUtil
 import kafka.serializer.StringDecoder
 import org.apache.log4j.{Level, LogManager}
@@ -54,7 +55,7 @@ object Scheduler {
 
 //    DBUtil.initUrlSet(configFile)
 //    SnowBallParser.extractVip(lazyConn, sendTopic)
-    SendHomePage.sendPages(configFile, lazyConn, sendTopic)
+    SendUrl.sendHomePages(lazyConn, sendTopic)
 
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
@@ -96,6 +97,8 @@ object Scheduler {
             TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.MOER.id =>
             MoerParser.parse(result._1, result._2, lazyConn, topic)
+          case id if id == Platform.WEIBO.id =>
+            WeiboParser.parse(result._1, result._2, lazyConn, topic)
 
         }
 

@@ -297,6 +297,43 @@ object DBUtil {
 
   }
 
+  /**
+    * 保存雪球 vip 信息
+    */
+  def insertWeiboVipInfo(userId: String, followersCount: Int, vip: Boolean, name: String, introduction: String, homePage: String, portrait: String, lazyConn: LazyConnections): Unit = {
+
+    var prep = lazyConn.mysqlConn
+
+    if (prep.isClosed) {
+
+      Class.forName("com.mysql.jdbc.Driver")
+      val configFile = XML.loadFile("/Users/yang/code/SmartData/vipanalyzer/src/main/resources/config.xml")
+      val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
+      prep = connection.prepareStatement("INSERT INTO vip_weibo (user_id, followers_count, official_vip, name, introduction, home_page, portrait) VALUES (?,?,?,?,?,?,?)")
+
+    }
+
+    try {
+
+      prep.setString(1, userId)
+      prep.setInt(2, followersCount)
+      prep.setBoolean(3, vip)
+      prep.setString(4, name)
+      prep.setString(5, introduction)
+      prep.setString(6, homePage)
+      prep.setString(7, portrait)
+      prep.executeUpdate
+
+    } catch {
+
+      case e: Exception =>
+        VALogger.error("向MySQL插入数据失败")
+        VALogger.exception(e)
+
+    }
+
+  }
+
   def initUrlSet(configFile: Elem): Unit = {
 
     Class.forName("com.mysql.jdbc.Driver")
