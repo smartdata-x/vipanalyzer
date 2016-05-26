@@ -11,4 +11,11 @@ object DateUtil {
 
   def getDateString(timestamp: Long): String = new SimpleDateFormat("yyyyMMddHHmmss").format(timestamp)
 
+  def getTimeStamp(dateStr: String, formatStr: String): Long = {
+
+    val sdf = new SimpleDateFormat(formatStr)
+    sdf.parse(dateStr).getTime
+
+  }
+
 }

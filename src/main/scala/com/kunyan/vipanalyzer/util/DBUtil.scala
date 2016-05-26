@@ -4,7 +4,6 @@ import java.sql.DriverManager
 
 import com.ibm.icu.text.CharsetDetector
 import com.kunyan.vipanalyzer.Scheduler
-import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser.SnowBallParser
@@ -12,7 +11,7 @@ import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.log4j.{Level, LogManager}
 
-import scala.xml.{XML, Elem}
+import scala.xml.{Elem, XML}
 
 /**
   * Created by yang on 5/12/16.
@@ -256,6 +255,44 @@ object DBUtil {
       case e: Exception =>
 //        e.printStackTrace()
         null
+
+    }
+
+  }
+
+  def insert(lazyConn: LazyConnections, params: Any*): Unit = {
+
+    val prep = lazyConn.mysqlConn
+
+    try {
+
+      for (i <- params.indices) {
+
+        val param = params(i)
+
+        param match {
+          case param: String =>
+            prep.setString(i + 1, param)
+          case param: Int =>
+            prep.setInt(i + 1, param)
+          case param: Boolean =>
+            prep.setBoolean(i + 1, param)
+          case param: Long =>
+            prep.setLong(i + 1, param)
+          case param: Double =>
+            prep.setDouble(i + 1, param)
+          case _ =>
+            VALogger.error("Unknown Type")
+        }
+      }
+
+      prep.executeUpdate
+
+    } catch {
+
+      case e: Exception =>
+        VALogger.error("向MySQL插入数据失败")
+        VALogger.exception(e)
 
     }
 

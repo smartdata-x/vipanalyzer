@@ -4,8 +4,6 @@ import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser._
-import com.kunyan.vipanalyzer.task.snowball.SendHomePage
-import com.kunyan.vipanalyzer.task.weibo.SendUrl
 import com.kunyan.vipanalyzer.util.DBUtil
 import kafka.serializer.StringDecoder
 import org.apache.log4j.{Level, LogManager}
@@ -53,9 +51,7 @@ object Scheduler {
 
     LogManager.getRootLogger.setLevel(Level.WARN)
 
-//    DBUtil.initUrlSet(configFile)
-//    SnowBallParser.extractVip(lazyConn, sendTopic)
-    SendUrl.sendHomePages(lazyConn, sendTopic)
+    MoerParser.sendArticleUrl(configFile, lazyConn, sendTopic)
 
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
@@ -116,6 +112,5 @@ object Scheduler {
     }
 
   }
-
 
 }
