@@ -1,6 +1,7 @@
 package com.kunyan.vipanalyzer.parser
 
 import java.sql.DriverManager
+import java.text.SimpleDateFormat
 
 import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.config.Platform
@@ -37,12 +38,10 @@ object TaoGuBaParser {
 
     }*/
 
-    if (url.contains(USER_INFO)) {
-      extractVipInfo(url, html, lazyConn, topic)
+    if (url.contains(BLOG_URL)) {
+      extractArticle(url, html, lazyConn, topic)
     }
 
-    val message = StringUtil.getUrlJsonString(Platform.TAOGUBA.id, url, 1)
-    lazyConn.sendTask(topic, message)
   }
 
   /**
@@ -304,6 +303,78 @@ object TaoGuBaParser {
       case e: Exception =>
         lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.TAOGUBA.id, url, 2))
         VALogger.error("Invalid DOM: " + url)
+
+    }
+
+  }
+
+  def saveArticleInfo(configFile: Elem, lazyConn: LazyConnections, topic: String): Unit = {
+
+    Class.forName("com.mysql.jdbc.Driver")
+    val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
+
+    sys.addShutdownHook {
+      connection.close()
+    }
+
+    LogManager.getRootLogger.setLevel(Level.WARN)
+
+    val sql = "select DISTINCT user_id from vip_taoguba"
+    val statement = connection.createStatement()
+    val data = statement.executeQuery(sql)
+
+    while (data.next()) {
+
+      val userId = data.getString("user_id")
+      val url = BLOG_URL + userId
+
+      val result = DBUtil.query(Platform.TAOGUBA.id.toString, url, lazyConn)
+
+      if (result == null || result._1.isEmpty || result._2.isEmpty) {
+        lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.TAOGUBA.id, url, 2))
+      } else {
+        extractArticle(url, result._2, lazyConn, topic)
+      }
+
+    }
+
+    statement.close()
+    connection.close()
+
+  }
+
+  def extractArticle(url: String, html: String, lazyConn: LazyConnections, topic: String): Unit = {
+
+    try {
+
+      val userId = url.split("/").last
+      val doc = Jsoup.parse(html)
+      val trTags = doc.getElementsByClass("blogtable").first.getElementsByTag("tr")
+
+      for (i <- 1 until trTags.size - 1) {
+
+          val tag = trTags.get(i)
+          val tdCount = tag.getElementsByTag("td").size
+          val aTag = tag.getElementsByTag("a").first
+          val url = HOME_PAGE + aTag.attr("href")
+          val title = aTag.attr("title")
+          val recommend = tag.getElementsByTag("img").first.attr("src").contains("icon43.gif")
+          val countArr = tag.getElementsByTag("td").get(tdCount - 2).text.split("/")
+          val readCount = countArr(0).toInt
+          val commentCount = countArr(1).toInt
+          val date = tag.getElementsByTag("td").get(tdCount - 1).text
+          val timeStamp = new SimpleDateFormat("yyyy-MM-dd").parse(date).getTime
+
+          DBUtil.insertTGBArticle(userId, title, recommend, readCount, commentCount, url, timeStamp, lazyConn)
+
+
+      }
+
+    } catch {
+
+      case e: Exception =>
+        lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.TAOGUBA.id, url, 2))
+        VALogger.exception(e)
 
     }
 
