@@ -175,19 +175,29 @@ object MoerParser {
 
       } else {
 
-        val doc = Jsoup.parse(result._2)
-        val trTags = doc.getElementById("list1").getElementsByTag("tr")
+        try {
 
-        for (i <- 0 until trTags.size) {
+          val doc = Jsoup.parse(result._2)
+          val trTags = doc.getElementById("list1").getElementsByTag("tr")
 
-          val url = HOME_PAGE + trTags.get(i).getElementsByTag("a").first.attr("href")
-          val articleResult = DBUtil.query(Platform.MOER.id.toString, url, lazyConn)
+          for (i <- 0 until trTags.size) {
 
-          if (articleResult != null) {
-            extractArticle(articleResult._1, articleResult._2, lazyConn, topic)
-          } else {
-            lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.MOER.id, url, 0))
+            val url = HOME_PAGE + trTags.get(i).getElementsByTag("a").first.attr("href")
+            val articleResult = DBUtil.query(Platform.MOER.id.toString, url, lazyConn)
+
+            if (articleResult != null) {
+              extractArticle(articleResult._1, articleResult._2, lazyConn, topic)
+            } else {
+              lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.MOER.id, url, 0))
+            }
+
           }
+
+        } catch {
+
+          case e: Exception =>
+            lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.MOER.id, result._1, 0))
+            VALogger.warn("Invalid DOM: " + result._1)
 
         }
 
