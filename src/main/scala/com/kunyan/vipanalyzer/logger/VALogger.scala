@@ -13,6 +13,7 @@ object VALogger {
   PropertyConfigurator.configure("/home/vip/conf/log4j.properties")
 
   def exception(e: Exception) = {
+    logger.error(e.getLocalizedMessage)
     logger.error(e.getStackTraceString)
   }
 
@@ -21,7 +22,8 @@ object VALogger {
   }
 
   def warn(msg: String): Unit = {
-    logger.warn(msg)
+//    logger.warn(msg)
+    println(msg)
   }
 
   def info(msg: String): Unit = {
