@@ -13,7 +13,7 @@ object WeiboContent {
     * 微博提取正文解析
     *
     * @param html 将要解析的字符串
-    * @return 提取的正文 标题
+    * @return 标题，正文
     */
   def parse(html: String): (String, String) = {
 

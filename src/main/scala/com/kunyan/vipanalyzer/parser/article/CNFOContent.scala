@@ -8,9 +8,15 @@ import org.jsoup.Jsoup
   */
 object CNFOContent {
 
-  def getContent(html: String) = {
+  /**
+    * 中金博客正文解析
+    *
+    * @param html 将要解析的字符串
+    * @return 标题，正文，图片链接
+    */
+  def getContent(html: String): (String, String, String) = {
 
-    try{
+    try {
 
       val doc = Jsoup.parse(html, "UTF-8")
       val title = doc.select("head").select("title").text.split("_")(0)
@@ -18,15 +24,18 @@ object CNFOContent {
       val regex = "\\s+"
       val result = content.replaceAll(regex, "").trim()
       val imgStr = doc.getElementsByAttributeValue("class", "ArticleCont ArtLink").get(0).select("img")
+      var pictureUrl = ""
 
       if (imgStr != null) {
         //有的可能没有图片
-        val pictureUrl = imgStr.attr("src")
+        pictureUrl = imgStr.attr("src")
       }
 
-    } catch  {
-      case e:Exception =>
+      (title, content, pictureUrl)
+    } catch {
+      case e: Exception =>
         e.printStackTrace()
+        null
     }
 
   }
