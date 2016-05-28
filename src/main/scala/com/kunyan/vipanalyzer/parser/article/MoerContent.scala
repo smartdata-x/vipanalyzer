@@ -4,10 +4,17 @@ import org.jsoup.Jsoup
 
 /**
   * Created by niujiaojiao on 2016/5/27.
+  * 摩尔金融解析
   */
 object MoerContent {
 
-  def getContent(html: String) = {
+  /**
+    * 摩尔金融解析
+    *
+    * @param html 将要解析的字符串
+    * @return 获取的标题，正文
+    */
+  def getContent(html: String): (String, String) = {
 
     try {
 
@@ -19,10 +26,14 @@ object MoerContent {
       }
 
       var content = doc.getElementsByAttributeValue("class", "left-content").select("p").text().trim()
+
+      (title, content)
     } catch {
       case e: Exception =>
         e.printStackTrace()
+        null
     }
 
   }
+
 }

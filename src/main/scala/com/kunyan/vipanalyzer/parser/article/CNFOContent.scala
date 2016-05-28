@@ -4,7 +4,7 @@ import org.jsoup.Jsoup
 
 /**
   * Created by niujiaojiao on 2016/5/27.
-  * 正文提取
+  * 中金博客正文解析
   */
 object CNFOContent {
 
