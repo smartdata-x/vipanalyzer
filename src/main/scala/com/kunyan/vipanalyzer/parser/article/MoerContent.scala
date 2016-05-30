@@ -25,7 +25,7 @@ object MoerContent {
         title = title.replace("-摩尔金融", "")
       }
 
-      var content = doc.getElementsByAttributeValue("class", "left-content").select("p").text().trim()
+      val content = doc.getElementsByAttributeValue("class", "left-content").select("p").text().trim()
 
       (title, content)
     } catch {

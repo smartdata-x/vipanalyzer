@@ -3,7 +3,6 @@ package com.kunyan.vipanalyzer.db
 import java.sql.{DriverManager, PreparedStatement}
 import java.util.Properties
 
-import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.logger.VALogger
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
@@ -165,5 +164,3 @@ object LazyConnections {
   }
 
 }
-
-

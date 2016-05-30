@@ -15,7 +15,7 @@ object WeiboContent {
     * @param html 将要解析的字符串
     * @return 标题，正文
     */
-  def parse(html: String): (String, String) = {
+  def getContent(html: String): (String, String) = {
 
     val doc = Jsoup.parse(html, "UTF-8")
 
