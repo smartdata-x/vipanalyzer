@@ -27,7 +27,16 @@ object WeiboContent {
         title = title.replace("- 微博", "")
       }
 
-      val index = doc.getElementsByTag("script").size - 6
+      var index = 0
+
+      for (i <- 0 until doc.getElementsByTag("script").size()) {
+
+        if (doc.getElementsByTag("script").get(i).toString.contains("pl.content.weiboDetail.index")) {
+          index = i
+        }
+
+      }
+
       val docStr = doc.getElementsByTag("script").get(index).toString
       val result = docStr.substring(16, docStr.length - 10)
       val jsonInfo = JSON.parseFull(result)
@@ -48,15 +57,15 @@ object WeiboContent {
             val textComment = children.getElementsByAttributeValue("node-type", "feed_list_content").text()
             val textOrigin = children.getElementsByAttributeValue("node-type", "feed_list_reason").text()
             value = textComment + " " + textOrigin
-
           }
+
           case None => println("Parsing failed!")
           case other => println("Unknown data structure :" + other)
         }
 
       }
-      (title, value)
 
+      (title, value)
     } catch {
       case e: Exception =>
         e.printStackTrace()
