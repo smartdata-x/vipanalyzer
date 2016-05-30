@@ -20,7 +20,7 @@ object CNFOContent {
 
       val doc = Jsoup.parse(html, "UTF-8")
       val title = doc.select("head").select("title").text.split("_")(0)
-      var content = doc.getElementsByAttributeValue("class", "ArticleCont ArtLink").select("p").text()
+      val content = doc.getElementsByAttributeValue("class", "ArticleCont ArtLink").select("p").text()
       val regex = "\\s+"
       val result = content.replaceAll(regex, "").trim()
       val imgStr = doc.getElementsByAttributeValue("class", "ArticleCont ArtLink").get(0).select("img")

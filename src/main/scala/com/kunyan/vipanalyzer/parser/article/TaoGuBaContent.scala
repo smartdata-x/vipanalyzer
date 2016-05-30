@@ -27,7 +27,7 @@ object TaoGuBaContent {
         title = title.replace("_淘股吧", "")
       }
 
-      var content = doc.getElementsByAttributeValue("class", "p_coten").text()
+      val content = doc.getElementsByAttributeValue("class", "p_coten").text()
       val imgStr = doc.getElementsByAttributeValue("class", "p_wenz").get(0).select("img")
 
       if (imgStr != null) {
