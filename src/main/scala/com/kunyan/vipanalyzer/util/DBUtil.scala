@@ -270,7 +270,7 @@ object DBUtil {
       val url = table.get(get).getValue(Bytes.toBytes("basic"), Bytes.toBytes("url"))
       val content = table.get(get).getValue(Bytes.toBytes("basic"), Bytes.toBytes("content"))
 
-      if (url == null || content == null) {
+      if (url == null && content == null) {
         VALogger.error(s"Get empty data by this table: $tableName and rowkey: $rowkey")
         return null
       }
@@ -282,6 +282,33 @@ object DBUtil {
 
       case e: Exception =>
 //        e.printStackTrace()
+        null
+
+    }
+
+  }
+
+  def queryContent(tableName: String, rowkey: String, lazyConn: LazyConnections): String = {
+
+    val table = lazyConn.getTable(tableName)
+    val get = new Get(rowkey.getBytes)
+
+    try {
+
+      val content = table.get(get).getValue(Bytes.toBytes("basic"), Bytes.toBytes("content"))
+
+      if (content == null) {
+        VALogger.error(s"Get empty data by this table: $tableName and rowkey: $rowkey")
+        return null
+      }
+
+      val encoding = new CharsetDetector().setText(content).detect().getName
+
+      new String(content, encoding)
+    } catch {
+
+      case e: Exception =>
+        //        e.printStackTrace()
         null
 
     }

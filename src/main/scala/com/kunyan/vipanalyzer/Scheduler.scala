@@ -34,8 +34,8 @@ object Scheduler {
     val path = args(0)
 
     val configFile = XML.loadFile(path)
-    val connectionsBr = ssc.sparkContext.broadcast(LazyConnections(configFile))
     val lazyConn = LazyConnections(configFile)
+    val connectionsBr = ssc.sparkContext.broadcast(lazyConn)
 
     val groupId = (configFile \ "kafka" \ "vip").text
     val brokerList = (configFile \ "kafka" \ "brokerList").text
@@ -50,8 +50,6 @@ object Scheduler {
       ssc, kafkaParams, topicsSet)
 
     LogManager.getRootLogger.setLevel(Level.WARN)
-
-    MoerParser.sendArticleUrl(configFile, lazyConn, sendTopic)
 
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 

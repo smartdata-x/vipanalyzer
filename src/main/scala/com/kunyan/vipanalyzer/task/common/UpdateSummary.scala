@@ -4,8 +4,9 @@ import java.sql.DriverManager
 
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
-import com.kunyan.vipanalyzer.parser.article.{TaoGuBaContent, MoerContent, CNFOContent, SnowBallContent}
+import com.kunyan.vipanalyzer.parser.article._
 import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
+import com.kunyandata.nlpsuit.summary.SummaryExtractor
 
 import scala.xml.XML
 
@@ -16,7 +17,7 @@ object UpdateSummary {
 
   def main(args: Array[String]): Unit = {
 
-    updateWeibo(args(0))
+    updateSnowBall(args(0))
 
   }
 
@@ -46,7 +47,7 @@ object UpdateSummary {
       } else {
 
         val html = hbaseResult._2
-        val results = TaoGuBaContent.getContent(html)
+        val results = WeiboContent.getContent(html)
 
         if (results == null) {
 
@@ -86,27 +87,24 @@ object UpdateSummary {
     val statement = connection.createStatement()
     val result = statement.executeQuery(sql)
 
-    val updateSummaryPs = connection.prepareStatement("update article_snowball set summary=? where url=?")
+    val updateSummaryPs = connection.prepareStatement("update article_info set digest=?, summary=? where url=?")
 
     while (result.next()) {
 
       val url = result.getString("url")
-      val hbaseResult = DBUtil.query(Platform.CNFOL.id.toString, url, lazyConn)
+      val hbaseResult = DBUtil.query(Platform.SNOW_BALL.id.toString, url, lazyConn)
 
-      if (hbaseResult == null) {
-
-        lazyConn.sendTask((configFile \ "kafka" \ "send").text, StringUtil.getUrlJsonString(Platform.SNOW_BALL.id, url, 2))
-
-      } else {
+      if (hbaseResult != null) {
 
         val html = hbaseResult._2
         var content = SnowBallContent.getContent(html)._2
-
+        val digest = SummaryExtractor.extractSummary(content, "222.73.57.17", 16001)
         if (content.length > 300)
           content = content.substring(0, 300)
 
-        updateSummaryPs.setString(1, content)
-        updateSummaryPs.setString(2, url)
+        updateSummaryPs.setString(1, digest)
+        updateSummaryPs.setString(2, content)
+        updateSummaryPs.setString(3, url)
         updateSummaryPs.executeUpdate()
       }
 
@@ -115,5 +113,7 @@ object UpdateSummary {
     statement.close()
     updateSummaryPs.close()
     connection.close()
+
   }
+
 }
