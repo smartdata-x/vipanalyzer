@@ -23,6 +23,7 @@ object Cnfol extends App {
       val user = children.select("div.UserBox a.Name").text()
       val title = children.select("div.UserBox a.Tit").text()
       val content = children.select("p.ContentP").text()
+
       (user, title, content)
     }
 
