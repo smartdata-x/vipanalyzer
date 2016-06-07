@@ -1,26 +1,53 @@
 package com.kunyan.vipanalyzer.db
 
-import java.sql.{DriverManager, PreparedStatement}
+import java.net.Socket
+import java.sql.{Connection, DriverManager, PreparedStatement}
 import java.util.Properties
 
 import com.kunyan.vipanalyzer.logger.VALogger
+import com.kunyan.vipanalyzer.util.RedisUtil
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
+import redis.clients.jedis.Jedis
 
 import scala.xml.Elem
 
 /**
   * Created by yangshuai on 2016/5/11.
   */
-class LazyConnections(createHbaseConnection: () => org.apache.hadoop.hbase.client.Connection,
+class LazyConnections(createJedis: () => Jedis,
+                      createHbaseConnection: () => org.apache.hadoop.hbase.client.Connection,
                       createProducer: () => Producer[String, String],
-                      createMySQLConnection: () => PreparedStatement) extends Serializable {
+                      createMySQLConnection: () => Connection,
+                      createMySQLPS: () => PreparedStatement) extends Serializable {
+
+  lazy val jedis = createJedis()
 
   lazy val hbaseConn = createHbaseConnection()
 
   lazy val mysqlConn = createMySQLConnection()
 
+  lazy val preparedStatement = createMySQLPS()
+
   lazy val producer = createProducer()
+
+  def jedisHset(key: String, field: String, value: String): Long = {
+    jedisConnectIfNot()
+    val result = jedis.hset(key, field, value)
+    result
+  }
+
+  def jedisHget(key: String, field: String): String = {
+    jedisConnectIfNot()
+    jedis.hget(key, field)
+  }
+
+  def jedisConnectIfNot(): Unit = {
+    if (!jedis.isConnected) {
+      jedis.connect()
+      VALogger.warn("redis reconnect!!!")
+    }
+  }
 
   def sendTask(topic: String, value: String): Unit = {
 
@@ -53,6 +80,14 @@ class LazyConnections(createHbaseConnection: () => org.apache.hadoop.hbase.clien
 object LazyConnections {
 
   def apply(configFile: Elem): LazyConnections = {
+
+    val createJedis = () => {
+      val jedisPool = RedisUtil.getRedis((configFile \ "redis" \ "ip").text, (configFile \ "redis" \ "port").text.toInt, (configFile \ "redis" \ "auth").text, (configFile \ "redis" \ "db").text.toInt)
+      sys.addShutdownHook {
+        jedisPool.close()
+      }
+      jedisPool.getResource
+    }
 
     val createHbaseConnection = () => {
 
@@ -87,6 +122,18 @@ object LazyConnections {
       }
 
       producer
+    }
+
+    val createMySQLConnection = () => {
+
+      Class.forName("com.mysql.jdbc.Driver")
+      val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
+
+      sys.addShutdownHook {
+        connection.close()
+      }
+
+      connection
     }
 
     val createCNFOLPs = () => {
@@ -159,7 +206,7 @@ object LazyConnections {
       connection.prepareStatement("INSERT INTO vip_weibo (user_id, followers_count, official_vip, name, introduction, home_page, portrait) VALUES (?,?,?,?,?,?,?)")
     }
 
-    new LazyConnections(createHbaseConnection, createProducer, createMOERPs)
+    new LazyConnections(createJedis, createHbaseConnection, createProducer, createMySQLConnection, createMOERPs)
 
   }
 

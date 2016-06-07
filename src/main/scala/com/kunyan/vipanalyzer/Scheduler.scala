@@ -86,13 +86,15 @@ object Scheduler {
           case id if id == Platform.SNOW_BALL.id =>
             SnowBallParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.CNFOL.id =>
-            CNFOLParser.parseBlog(result._1, result._2, lazyConn, topic)
-          case id if id == Platform.TAOGUBA.id =>
-            TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
-          case id if id == Platform.MOER.id =>
-            MoerParser.parse(result._1, result._2, lazyConn, topic)
-          case id if id == Platform.WEIBO.id =>
-            WeiboParser.parse(result._1, result._2, lazyConn, topic)
+            CNFOLParser.parse(result._1, result._2, lazyConn, topic)
+//          case id if id == Platform.TAOGUBA.id =>
+//            TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
+//          case id if id == Platform.MOER.id =>
+//            MoerParser.parse(result._1, result._2, lazyConn, topic)
+//          case id if id == Platform.WEIBO.id =>
+//            WeiboParser.parse(result._1, result._2, lazyConn, topic)
+          case _ =>
+            println(attrId)
 
         }
 

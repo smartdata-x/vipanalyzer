@@ -32,6 +32,8 @@ libraryDependencies += "org.apache.hbase" % "hbase-server" % "1.1.2"
 
 libraryDependencies += "org.apache.hbase" % "hbase-common" % "1.1.2"
 
+libraryDependencies += "redis.clients" % "jedis" % "2.8.0"
+
 assemblyMergeStrategy in assembly := {
 
   case PathList("javax", "servlet", xs @ _*) => MergeStrategy.last
