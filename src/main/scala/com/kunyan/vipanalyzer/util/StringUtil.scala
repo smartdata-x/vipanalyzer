@@ -1,5 +1,7 @@
 package com.kunyan.vipanalyzer.util
 
+import java.util.Date
+
 import com.kunyan.vipanalyzer.logger.VALogger
 
 /**
@@ -14,6 +16,11 @@ object StringUtil {
     val message = json.format(platform, url, DateUtil.getDateString, result)
     VALogger.warn(message)
     message
+  }
+
+  def toJson(attrId: String, url: String): String = {
+    val json = "{\"id\":%s, \"attrid\":%s, \"depth\":%d, \"cur_depth\":%d, \"method\":%s, \"url\":\"%s\"}"
+    json.format(new Date().getTime.toString, attrId, 2, 2, "2", url)
   }
 
 }

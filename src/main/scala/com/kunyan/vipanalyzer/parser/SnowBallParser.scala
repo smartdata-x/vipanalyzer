@@ -4,6 +4,7 @@ import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
+import com.kunyan.vipanalyzer.parser.streaming.SnowballStreamingParser
 import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
 
 import scala.util.parsing.json.JSON
@@ -20,31 +21,7 @@ object SnowBallParser {
 
   def parse(url: String, html: String, lazyConn: LazyConnections, topic: String): Unit = {
 
-    /*if (url.contains("xueqiu.com/friendships/groups/members.json")) {
-
-      if (!Scheduler.urlSet.contains(url.split("uid=")(1))) {
-
-        val result = DBUtil.query(Platform.SNOW_BALL.id.toString, url, lazyConn)
-
-        if (result == null || result._1.isEmpty || result._2.isEmpty) {
-
-          VALogger.error("Start id is empty.")
-
-        } else {
-
-          saveVipInfo(result._1, result._2, lazyConn, topic)
-
-        }
-
-      }
-
-    } else {
-
-      VALogger.error(s"Invalid url: $url")
-
-    }*/
-
-    extractArticles(url, html, lazyConn, topic)
+    SnowballStreamingParser.parse(url, html, lazyConn, topic)
 
   }
 

@@ -24,7 +24,7 @@ object Scheduler {
 
   def main(args: Array[String]): Unit = {
 
-    val sparkConf = new SparkConf().setMaster("local[4]")
+    val sparkConf = new SparkConf()
       .setAppName("VIP ANALYZER")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2000")
@@ -34,8 +34,8 @@ object Scheduler {
     val path = args(0)
 
     val configFile = XML.loadFile(path)
-    val connectionsBr = ssc.sparkContext.broadcast(LazyConnections(configFile))
     val lazyConn = LazyConnections(configFile)
+    val connectionsBr = ssc.sparkContext.broadcast(lazyConn)
 
     val groupId = (configFile \ "kafka" \ "vip").text
     val brokerList = (configFile \ "kafka" \ "brokerList").text
@@ -50,8 +50,6 @@ object Scheduler {
       ssc, kafkaParams, topicsSet)
 
     LogManager.getRootLogger.setLevel(Level.WARN)
-
-    MoerParser.sendArticleUrl(configFile, lazyConn, sendTopic)
 
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
@@ -88,13 +86,15 @@ object Scheduler {
           case id if id == Platform.SNOW_BALL.id =>
             SnowBallParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.CNFOL.id =>
-            CNFOLParser.parseBlog(result._1, result._2, lazyConn, topic)
-          case id if id == Platform.TAOGUBA.id =>
-            TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
-          case id if id == Platform.MOER.id =>
-            MoerParser.parse(result._1, result._2, lazyConn, topic)
-          case id if id == Platform.WEIBO.id =>
-            WeiboParser.parse(result._1, result._2, lazyConn, topic)
+            CNFOLParser.parse(result._1, result._2, lazyConn, topic)
+//          case id if id == Platform.TAOGUBA.id =>
+//            TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
+//          case id if id == Platform.MOER.id =>
+//            MoerParser.parse(result._1, result._2, lazyConn, topic)
+//          case id if id == Platform.WEIBO.id =>
+//            WeiboParser.parse(result._1, result._2, lazyConn, topic)
+          case _ =>
+            println(attrId)
 
         }
 

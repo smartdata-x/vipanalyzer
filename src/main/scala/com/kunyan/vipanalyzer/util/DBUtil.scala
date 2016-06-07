@@ -1,6 +1,6 @@
 package com.kunyan.vipanalyzer.util
 
-import java.sql.DriverManager
+import java.sql.{CallableStatement, DriverManager}
 
 import com.ibm.icu.text.CharsetDetector
 import com.kunyan.vipanalyzer.Scheduler
@@ -20,7 +20,7 @@ object DBUtil {
 
   def insertCNFOL(userId: String, followersCount: Int, lazyConn: LazyConnections): Unit = {
 
-    val prep = lazyConn.mysqlConn
+    val prep = lazyConn.preparedStatement
 
     try {
 
@@ -40,7 +40,7 @@ object DBUtil {
 
   def saveCNFOLVip(userId: String, vip: Boolean, name: String, introduction: String, url: String, lazyConn: LazyConnections): Unit = {
 
-    val prep = lazyConn.mysqlConn
+    val prep = lazyConn.preparedStatement
 
     try {
 
@@ -63,7 +63,7 @@ object DBUtil {
 
   def saveBlogInfo(userId: String, title: String, recommend: Boolean, time: String, reproduce: Int, comment: Int, url: String, lazyConn: LazyConnections): Unit = {
 
-    val prep = lazyConn.mysqlConn
+    val prep = lazyConn.preparedStatement
 
     try {
 
@@ -88,7 +88,7 @@ object DBUtil {
 
   def saveMOERVip(userId: String, followersCount: Int, vip: Int, name: String, introduction: String, url: String, portrait: String, field: String, lazyConn: LazyConnections): Unit = {
 
-    val prep = lazyConn.mysqlConn
+    val prep = lazyConn.preparedStatement
 
     try {
 
@@ -115,7 +115,7 @@ object DBUtil {
 
   def insertTGB(userId: String, data: (Int, Int, Int), lazyConn: LazyConnections): Boolean = {
 
-    val prep = lazyConn.mysqlConn
+    val prep = lazyConn.preparedStatement
 
     try {
 
@@ -139,7 +139,7 @@ object DBUtil {
 
   def saveTGBVip(userId: String, followersCount: Int, vip: Int, name: String, introduction: String, homePage: String, portrait: String, marrow: Int, recommend: Int, lazyConn: LazyConnections): Unit = {
 
-    val prep = lazyConn.mysqlConn
+    val prep = lazyConn.preparedStatement
 
     try {
 
@@ -166,7 +166,7 @@ object DBUtil {
 
   def insertTGBArticle(userId: String, title: String, recommend: Boolean, read: Int, comment: Int, url: String, ts: Long, lazyConn: LazyConnections): Unit = {
 
-    val prep = lazyConn.mysqlConn
+    val prep = lazyConn.preparedStatement
 
     try {
 
@@ -197,7 +197,7 @@ object DBUtil {
     */
   def insertSnowBallUserInfo(url: String, userId: String, followersCount: Int, lazyConn: LazyConnections, topic: String): Unit = {
 
-    val prep = lazyConn.mysqlConn
+    val prep = lazyConn.preparedStatement
 
     try {
 
@@ -219,7 +219,7 @@ object DBUtil {
     */
   def insertSnowBallVipInfo(userId: String, followersCount: Int, name: String, introduction: String, url: String, portrait: String, lazyConn: LazyConnections): Unit = {
 
-    var prep = lazyConn.mysqlConn
+    var prep = lazyConn.preparedStatement
 
     if (prep.isClosed) {
 
@@ -270,7 +270,7 @@ object DBUtil {
       val url = table.get(get).getValue(Bytes.toBytes("basic"), Bytes.toBytes("url"))
       val content = table.get(get).getValue(Bytes.toBytes("basic"), Bytes.toBytes("content"))
 
-      if (url == null || content == null) {
+      if (url == null && content == null) {
         VALogger.error(s"Get empty data by this table: $tableName and rowkey: $rowkey")
         return null
       }
@@ -288,9 +288,36 @@ object DBUtil {
 
   }
 
+  def queryContent(tableName: String, rowkey: String, lazyConn: LazyConnections): String = {
+
+    val table = lazyConn.getTable(tableName)
+    val get = new Get(rowkey.getBytes)
+
+    try {
+
+      val content = table.get(get).getValue(Bytes.toBytes("basic"), Bytes.toBytes("content"))
+
+      if (content == null) {
+        VALogger.error(s"Get empty data by this table: $tableName and rowkey: $rowkey")
+        return null
+      }
+
+      val encoding = new CharsetDetector().setText(content).detect().getName
+
+      new String(content, encoding)
+    } catch {
+
+      case e: Exception =>
+        //        e.printStackTrace()
+        null
+
+    }
+
+  }
+
   def insert(lazyConn: LazyConnections, params: Any*): Unit = {
 
-    val prep = lazyConn.mysqlConn
+    val prep = lazyConn.preparedStatement
 
     try {
 
@@ -326,12 +353,50 @@ object DBUtil {
 
   }
 
+  def insertCall(call: CallableStatement, params: Any*): Unit = {
+
+    try {
+
+      for (i <- params.indices) {
+
+        val param = params(i)
+
+        param match {
+          case param: String =>
+            call.setString(i + 1, param)
+          case param: Int =>
+            call.setInt(i + 1, param)
+          case param: Boolean =>
+            call.setBoolean(i + 1, param)
+          case param: Long =>
+            call.setLong(i + 1, param)
+          case param: Double =>
+            call.setDouble(i + 1, param)
+          case param: Short =>
+            call.setShort(i + 1, param)
+          case _ =>
+            VALogger.error("Unknown Type")
+        }
+      }
+
+      call.executeUpdate
+
+    } catch {
+
+      case e: Exception =>
+        VALogger.error("向MySQL插入数据失败")
+        VALogger.exception(e)
+
+    }
+
+  }
+
   /**
     * 保存雪球文章信息
     */
   def insertSnowBallArticle(userId: String, title: String, retweet: Int, reply: Int, url: String, ts: Int, lazyConn: LazyConnections): Unit = {
 
-    var prep = lazyConn.mysqlConn
+    var prep = lazyConn.preparedStatement
 
     if (prep.isClosed) {
 
@@ -367,7 +432,7 @@ object DBUtil {
     */
   def insertWeiboVipInfo(userId: String, followersCount: Int, vip: Boolean, name: String, introduction: String, homePage: String, portrait: String, lazyConn: LazyConnections): Unit = {
 
-    var prep = lazyConn.mysqlConn
+    var prep = lazyConn.preparedStatement
 
     if (prep.isClosed) {
 

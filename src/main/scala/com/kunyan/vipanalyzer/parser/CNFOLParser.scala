@@ -5,6 +5,7 @@ import java.sql.DriverManager
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
+import com.kunyan.vipanalyzer.parser.streaming.CnfolStreamingParser
 import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
 import org.apache.log4j.{Level, LogManager}
 import org.jsoup.Jsoup
@@ -22,60 +23,8 @@ object CNFOLParser {
 
   def parse(url: String, html: String, lazyConn: LazyConnections, topic: String): Unit = {
 
-    val doc = Jsoup.parse(html)
-    var result = ""
+    CnfolStreamingParser.parse(url, html, lazyConn, topic)
 
-    if (url.endsWith("friend")) {
-
-      try {
-
-        result = doc.getElementsByClass("page").first().getElementsByClass("CoRed").first().text.trim
-        val totalPage = result.split("/")(1).toInt
-
-        for (i <- 2 to totalPage) {
-          val message = StringUtil.getUrlJsonString(Platform.CNFOL.id, url + "?p=" + i.toString, 0)
-          lazyConn.sendTask(topic, message)
-        }
-
-      } catch {
-        case e: Exception =>
-          val message = StringUtil.getUrlJsonString(Platform.CNFOL.id, url, 1)
-          lazyConn.sendTask(topic, message)
-      }
-
-    }
-
-    val pTags = doc.getElementsByClass("FollowInfo")
-
-    for (i <- 0 until pTags.size()) {
-
-      val p = pTags.get(i)
-      val href = p.getElementsByTag("a").first().attr("href")
-
-      if (!href.contains("returnbolg")) {
-
-        val followersCount = p.getElementsByTag("a").get(1).getElementsByTag("em").text.trim
-
-        if (followersCount.nonEmpty) {
-
-          if (followersCount.toInt > 100) {
-
-            val userId = href.split("/myfocus/friend")(0).split(".com/")(1)
-            DBUtil.insertCNFOL(userId, followersCount.toInt, lazyConn)
-
-            val message = StringUtil.getUrlJsonString(Platform.CNFOL.id, href, 0)
-            lazyConn.sendTask(topic, message)
-
-          }
-
-        }
-
-      }
-
-    }
-
-    val message = StringUtil.getUrlJsonString(Platform.CNFOL.id, url, 1)
-    lazyConn.sendTask(topic, message)
   }
 
   /**
