@@ -47,7 +47,6 @@ object CnfolStreamingParser {
 
         }
 
-
         if (title == lastTitle)
           break()
 
