@@ -4,6 +4,7 @@ import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser._
+import com.kunyan.vipanalyzer.parser.streaming.{CnfolStreamingParser, TaogubaStreamingParser, MoerStreamingParser}
 import com.kunyan.vipanalyzer.util.DBUtil
 import kafka.serializer.StringDecoder
 import org.apache.log4j.{Level, LogManager}
@@ -84,11 +85,11 @@ object Scheduler {
 //          case id if id == Platform.SNOW_BALL.id =>
 //            SnowBallParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.CNFOL.id =>
-            CNFOLParser.parse(result._1, result._2, lazyConn, topic)
+            CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
-            TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
+            TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.MOER.id =>
-            MoerParser.parse(result._1, result._2, lazyConn, topic)
+            MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
 //          case id if id == Platform.WEIBO.id =>
 //            WeiboParser.parse(result._1, result._2, lazyConn, topic)
           case _ =>
