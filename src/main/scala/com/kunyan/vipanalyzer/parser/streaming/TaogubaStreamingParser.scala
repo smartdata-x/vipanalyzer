@@ -71,9 +71,14 @@ object TaogubaStreamingParser {
                 val url = "http://www.taoguba.com.cn/Reply" + "/" + objectID + "/" + otherID + "#" + otherID
                 val stock = ""
 
+<<<<<<< Updated upstream
                 println(title)
                 println(url)
                 DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
+=======
+                println(url)
+                DBUtil.insertCall(cstmt, userID, title, 0, 0, 0, url, timeStamp, "")
+>>>>>>> Stashed changes
                 lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, url))
               }
 

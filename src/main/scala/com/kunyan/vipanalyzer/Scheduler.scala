@@ -25,7 +25,7 @@ object Scheduler {
 
   def main(args: Array[String]): Unit = {
 
-    val sparkConf = new SparkConf()
+    val sparkConf = new SparkConf().setMaster("local")
       .setAppName("VIP ANALYZER")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2000")
