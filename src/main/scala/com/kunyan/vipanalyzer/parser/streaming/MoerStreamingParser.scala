@@ -62,14 +62,9 @@ object MoerStreamingParser {
           val url = "http://moer.jiemian.com/" + list.get(i).select("a").get(0).attr("href")
           val stock = ""
 
-<<<<<<< Updated upstream
           println(title)
           println(url)
           DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, stock)
-=======
-          println(url)
-          DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, "")
->>>>>>> Stashed changes
           lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, url))
 
         } catch {
