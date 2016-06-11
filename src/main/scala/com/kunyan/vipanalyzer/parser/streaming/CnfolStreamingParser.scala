@@ -1,5 +1,6 @@
 package com.kunyan.vipanalyzer.parser.streaming
 
+import java.sql.CallableStatement
 import java.util.Date
 
 import com.kunyan.vipanalyzer.config.Platform
@@ -58,8 +59,8 @@ object CnfolStreamingParser {
           val comment = child.select("div.HandleBox span:nth-of-type(3)").text.split(" ").last.toInt
           val url = child.select("div.UserBox a.Tit").attr("href")
 
+          println(url)
           DBUtil.insertCall(cstmt, userId, title, recommended, reproduce, comment, url, timeStamp, "")
-
           lazyConn.sendTask(topic, StringUtil.toJson(Platform.CNFOL.id.toString, url))
 
         } catch {

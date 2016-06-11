@@ -65,8 +65,6 @@ object Scheduler {
 
   def analyzer(message: String, lazyConn: LazyConnections, topic: String): Unit = {
 
-    VALogger.warn(message.replaceAll("\\n", ""))
-
     val json: Option[Any] = JSON.parseFull(message)
 
     if (json.isDefined) {
@@ -83,18 +81,18 @@ object Scheduler {
 
         attrId match {
 
-          case id if id == Platform.SNOW_BALL.id =>
-            SnowBallParser.parse(result._1, result._2, lazyConn, topic)
+//          case id if id == Platform.SNOW_BALL.id =>
+//            SnowBallParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.CNFOL.id =>
             CNFOLParser.parse(result._1, result._2, lazyConn, topic)
-//          case id if id == Platform.TAOGUBA.id =>
-//            TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
-//          case id if id == Platform.MOER.id =>
-//            MoerParser.parse(result._1, result._2, lazyConn, topic)
+          case id if id == Platform.TAOGUBA.id =>
+            TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
+          case id if id == Platform.MOER.id =>
+            MoerParser.parse(result._1, result._2, lazyConn, topic)
 //          case id if id == Platform.WEIBO.id =>
 //            WeiboParser.parse(result._1, result._2, lazyConn, topic)
           case _ =>
-            println(attrId)
+//            println(attrId)
 
         }
 

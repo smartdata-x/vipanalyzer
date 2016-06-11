@@ -7,6 +7,7 @@ import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
+import com.kunyan.vipanalyzer.parser.streaming.TaogubaStreamingParser
 import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
 import org.apache.log4j.{Level, LogManager}
 import org.jsoup.Jsoup
@@ -28,20 +29,7 @@ object TaoGuBaParser {
 
   def parse(url: String, html: String, lazyConn: LazyConnections, topic: String): Unit = {
 
-    /*if (url.contains(USER_INFO)) {
-
-      extractUserInfo(url, html, lazyConn, topic)
-
-    } else {
-
-      extractUsers(url, html, lazyConn, topic)
-
-    }*/
-
-    if (url.contains(BLOG_URL)) {
-      extractArticle(url, html, lazyConn, topic)
-    }
-
+    TaogubaStreamingParser.parse(url, html, lazyConn, topic)
   }
 
   /**

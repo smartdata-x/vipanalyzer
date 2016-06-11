@@ -1,5 +1,6 @@
 package com.kunyan.vipanalyzer.parser.streaming
 
+import java.sql.CallableStatement
 import java.text.SimpleDateFormat
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
@@ -31,6 +32,7 @@ object TaogubaStreamingParser {
       if (jsonInfo.isEmpty) {
 
         VALogger.error("\"JSON parse value is empty,please have a check!\"")
+
       } else {
 
         jsonInfo match {
@@ -56,21 +58,22 @@ object TaogubaStreamingParser {
 
                 }
 
-                if (title != lastTitle) {
+                if (title == lastTitle) {
                   break()
                 }
 
                 val date = value.getOrElse("actionDate", "")
                 val fm = new SimpleDateFormat("yyyy-MM-dd HH:mm")
-                val timeStamp = fm.parse(date).getTime
+                val timeStamp = (fm.parse(date).getTime / 1000).toInt
                 val userID = value.getOrElse("userID", "")
-                val userName = value.getOrElse("userName", "")
                 val objectID = value.getOrElse("objectID", "")
                 val otherID = value.getOrElse("OtherID", "")
                 val url = "http://www.taoguba.com.cn/Reply" + "/" + objectID + "/" + otherID + "#" + otherID
                 val stock = ""
 
-                DBUtil.insertCall(cstmt, userID, title, 0, 0, 0, url, timeStamp, "")
+                println(title)
+                println(url)
+                DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
                 lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, url))
               }
 
@@ -82,9 +85,10 @@ object TaogubaStreamingParser {
         }
       }
     } catch {
+
       case e: Exception =>
         VALogger.exception(e)
-        null
+
     }
 
     cstmt.close()

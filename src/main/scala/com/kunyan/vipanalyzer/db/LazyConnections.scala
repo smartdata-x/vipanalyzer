@@ -51,6 +51,8 @@ class LazyConnections(createJedis: () => Jedis,
 
   def sendTask(topic: String, value: String): Unit = {
 
+    println(value)
+
     val message = new KeyedMessage[String, String](topic, value)
 
     try {
