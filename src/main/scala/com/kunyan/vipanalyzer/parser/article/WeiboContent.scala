@@ -31,9 +31,8 @@ object WeiboContent {
 
       for (i <- 0 until doc.getElementsByTag("script").size()) {
 
-        if (doc.getElementsByTag("script").get(i).toString.contains("pl.content.weiboDetail.index")) {
+        if (doc.getElementsByTag("script").get(i).toString.contains("pl.content.weiboDetail.index"))
           index = i
-        }
 
       }
 

@@ -338,6 +338,7 @@ object DBUtil {
             prep.setDouble(i + 1, param)
           case _ =>
             VALogger.error("Unknown Type")
+
         }
       }
 

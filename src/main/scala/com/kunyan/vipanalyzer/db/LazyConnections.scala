@@ -1,6 +1,5 @@
 package com.kunyan.vipanalyzer.db
 
-import java.net.Socket
 import java.sql.{Connection, DriverManager, PreparedStatement}
 import java.util.Properties
 
@@ -50,6 +49,8 @@ class LazyConnections(createJedis: () => Jedis,
   }
 
   def sendTask(topic: String, value: String): Unit = {
+
+    println(value)
 
     val message = new KeyedMessage[String, String](topic, value)
 
@@ -203,7 +204,7 @@ object LazyConnections {
 
       VALogger.warn("MySQL connection created.")
 
-      connection.prepareStatement("INSERT INTO vip_weibo (user_id, followers_count, official_vip, name, introduction, home_page, portrait) VALUES (?,?,?,?,?,?,?)")
+      connection.prepareStatement("INSERT INTO article_weibo (user_id, title, retweet, reply, like_count, url, ts) VALUES (?,?,?,?,?,?,?)")
     }
 
     new LazyConnections(createJedis, createHbaseConnection, createProducer, createMySQLConnection, createMOERPs)

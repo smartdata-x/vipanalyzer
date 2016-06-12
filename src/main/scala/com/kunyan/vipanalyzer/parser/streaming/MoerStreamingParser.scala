@@ -1,5 +1,6 @@
 package com.kunyan.vipanalyzer.parser.streaming
 
+import java.sql.CallableStatement
 import java.util.Date
 
 import com.kunyan.vipanalyzer.config.Platform
@@ -47,23 +48,22 @@ object MoerStreamingParser {
 
         }
 
-        if (title == lastTitle) {
+        if (title == lastTitle)
           break()
-        }
 
         try {
 
           val userId = pageUrl.split("theId=")(1)
           val title = list.get(i).select("a").get(0).text()
-          val commentCount = list.get(i).select("div span").get(1).text()
-          val content = list.get(i).select("p").text()
           val read = 0
           val buy = 0
           val price = 0.0
           val url = "http://moer.jiemian.com/" + list.get(i).select("a").get(0).attr("href")
           val stock = ""
 
-          DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, "")
+          println(title)
+          println(url)
+          DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, stock)
           lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, url))
 
         } catch {
