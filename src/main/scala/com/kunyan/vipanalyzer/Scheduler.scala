@@ -4,7 +4,7 @@ import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser._
-import com.kunyan.vipanalyzer.parser.streaming.{CnfolStreamingParser, TaogubaStreamingParser, MoerStreamingParser}
+import com.kunyan.vipanalyzer.parser.streaming._
 import com.kunyan.vipanalyzer.util.DBUtil
 import kafka.serializer.StringDecoder
 import org.apache.log4j.{Level, LogManager}
@@ -68,6 +68,8 @@ object Scheduler {
 
     val json: Option[Any] = JSON.parseFull(message)
 
+    println(message)
+
     if (json.isDefined) {
 
       //get content from json
@@ -82,18 +84,18 @@ object Scheduler {
 
         attrId match {
 
-//          case id if id == Platform.SNOW_BALL.id =>
-//            SnowBallParser.parse(result._1, result._2, lazyConn, topic)
+          case id if id == Platform.SNOW_BALL.id =>
+            SnowballStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.CNFOL.id =>
             CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.MOER.id =>
             MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
-//          case id if id == Platform.WEIBO.id =>
-//            WeiboParser.parse(result._1, result._2, lazyConn, topic)
+          case id if id == Platform.WEIBO.id =>
+            WeiboStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case _ =>
-//            println(attrId)
+            println(attrId)
 
         }
 

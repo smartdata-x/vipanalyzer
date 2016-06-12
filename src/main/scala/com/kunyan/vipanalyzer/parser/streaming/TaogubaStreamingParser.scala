@@ -23,7 +23,7 @@ object TaogubaStreamingParser {
 
     val jsonInfo = JSON.parseFull(html)
 
-    val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertTaogubaNewArticle(?,?,?,?,?,?,?,?)}")
+    val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertTaogubaNewArticle(?,?,?,?,?,?,?)}")
 
     val lastTitle = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
 

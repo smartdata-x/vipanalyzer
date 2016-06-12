@@ -14,6 +14,7 @@ import scala.util.parsing.json.JSON
   * Created by niujiaojiao on 2016/6/8.
   */
 object WeiboStreamingParser {
+
   /**
     * 解析获取信息
     *
@@ -24,8 +25,6 @@ object WeiboStreamingParser {
     val doc = Jsoup.parse(html, "UTF-8")
 
     val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertWeiboNewArticle(?,?,?,?,?,?,?,?)}")
-
-    val lastTitle = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
 
     try {
 
@@ -48,6 +47,7 @@ object WeiboStreamingParser {
         VALogger.error("\"JSON parse value is empty,please have a check!\"")
 
       } else {
+
         jsonInfo match {
 
           case Some(mapInfo: Map[String, AnyVal]) => {
@@ -118,6 +118,7 @@ object WeiboStreamingParser {
                   user = children.getElementsByAttributeValue("class", "W_fb S_txt1").text()
                 }
 
+                println(url)
                 DBUtil.insertCall(cstmt, userId, content, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
                 lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, totalUrl))
               }
@@ -133,9 +134,10 @@ object WeiboStreamingParser {
       }
 
     } catch {
+
       case e: Exception =>
         e.printStackTrace()
-        null
+
     }
 
     cstmt.close()
