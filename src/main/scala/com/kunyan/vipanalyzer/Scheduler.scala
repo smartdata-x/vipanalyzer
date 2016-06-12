@@ -4,6 +4,7 @@ import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser._
+import com.kunyan.vipanalyzer.parser.streaming._
 import com.kunyan.vipanalyzer.util.DBUtil
 import kafka.serializer.StringDecoder
 import org.apache.log4j.{Level, LogManager}
@@ -24,7 +25,7 @@ object Scheduler {
 
   def main(args: Array[String]): Unit = {
 
-    val sparkConf = new SparkConf().setMaster("local[4]")
+    val sparkConf = new SparkConf().setMaster("local")
       .setAppName("VIP ANALYZER")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2000")
@@ -34,8 +35,8 @@ object Scheduler {
     val path = args(0)
 
     val configFile = XML.loadFile(path)
-    val connectionsBr = ssc.sparkContext.broadcast(LazyConnections(configFile))
     val lazyConn = LazyConnections(configFile)
+    val connectionsBr = ssc.sparkContext.broadcast(lazyConn)
 
     val groupId = (configFile \ "kafka" \ "vip").text
     val brokerList = (configFile \ "kafka" \ "brokerList").text
@@ -51,8 +52,6 @@ object Scheduler {
 
     LogManager.getRootLogger.setLevel(Level.WARN)
 
-    MoerParser.sendArticleUrl(configFile, lazyConn, sendTopic)
-
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
       rdd.foreach(message => {
@@ -67,9 +66,9 @@ object Scheduler {
 
   def analyzer(message: String, lazyConn: LazyConnections, topic: String): Unit = {
 
-    VALogger.warn(message.replaceAll("\\n", ""))
-
     val json: Option[Any] = JSON.parseFull(message)
+
+    println(message)
 
     if (json.isDefined) {
 
@@ -86,15 +85,17 @@ object Scheduler {
         attrId match {
 
           case id if id == Platform.SNOW_BALL.id =>
-            SnowBallParser.parse(result._1, result._2, lazyConn, topic)
+            SnowballStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.CNFOL.id =>
-            CNFOLParser.parseBlog(result._1, result._2, lazyConn, topic)
+            CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
-            TaoGuBaParser.parse(result._1, result._2, lazyConn, topic)
+            TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.MOER.id =>
-            MoerParser.parse(result._1, result._2, lazyConn, topic)
+            MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.WEIBO.id =>
-            WeiboParser.parse(result._1, result._2, lazyConn, topic)
+            WeiboStreamingParser.parse(result._1, result._2, lazyConn, topic)
+          case _ =>
+            println(attrId)
 
         }
 

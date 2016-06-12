@@ -7,6 +7,7 @@ import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
+import com.kunyan.vipanalyzer.parser.streaming.MoerStreamingParser
 import com.kunyan.vipanalyzer.util.{DateUtil, DBUtil, StringUtil}
 import org.jsoup.Jsoup
 
@@ -24,17 +25,7 @@ object MoerParser {
 
   def parse(url: String, html: String, lazyConn: LazyConnections, topic: String): Unit = {
 
-    if (url.contains(ARTICLE_PREFIX)) {
-
-      extractArticle(url, html, lazyConn, topic)
-      val message = StringUtil.getUrlJsonString(Platform.MOER.id, url, 1)
-      lazyConn.sendTask(topic, message)
-
-    } else {
-
-      VALogger.error("Unkonw message: " + url)
-
-    }
+    MoerStreamingParser.parse(url, html, lazyConn, topic)
 
   }
 
