@@ -48,9 +48,8 @@ object MoerStreamingParser {
 
         }
 
-        if (title == lastTitle) {
+        if (title == lastTitle)
           break()
-        }
 
         try {
 

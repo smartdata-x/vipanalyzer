@@ -58,9 +58,8 @@ object TaogubaStreamingParser {
 
                 }
 
-                if (title == lastTitle) {
+                if (title == lastTitle)
                   break()
-                }
 
                 val date = value.getOrElse("actionDate", "")
                 val fm = new SimpleDateFormat("yyyy-MM-dd HH:mm")
