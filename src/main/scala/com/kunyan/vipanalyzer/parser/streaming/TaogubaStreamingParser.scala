@@ -67,11 +67,9 @@ object TaogubaStreamingParser {
                 val userID = value.getOrElse("userID", "")
                 val objectID = value.getOrElse("objectID", "")
                 val otherID = value.getOrElse("OtherID", "")
-                val url = "http://www.taoguba.com.cn/Reply" + "/" + objectID + "/" + otherID + "#" + otherID
+                val url = "http://www.taoguba.com.cn/Reply" + "/" + objectID + "/" + otherID
                 val stock = ""
 
-                println(title)
-                println(url)
                 DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
                 lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, url))
               }
