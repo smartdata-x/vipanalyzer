@@ -120,7 +120,7 @@ object WeiboStreamingParser {
 
                 println(url)
                 DBUtil.insertCall(cstmt, userId, content, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
-                lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, totalUrl))
+                lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
               }
 
             }
@@ -145,7 +145,8 @@ object WeiboStreamingParser {
 
   /**
     * 获取页面时间最新的链接
-    * @param newDoc  提取页面信息
+    *
+    * @param newDoc     提取页面信息
     * @param anotherDoc 提取页面信息
     * @return 返回链接字符串
     */

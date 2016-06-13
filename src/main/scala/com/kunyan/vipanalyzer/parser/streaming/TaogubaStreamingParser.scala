@@ -71,7 +71,7 @@ object TaogubaStreamingParser {
                 val stock = ""
 
                 DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
-                lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, url))
+                lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
               }
 
             }

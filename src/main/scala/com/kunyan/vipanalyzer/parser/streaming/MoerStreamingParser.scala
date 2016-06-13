@@ -64,7 +64,7 @@ object MoerStreamingParser {
           println(title)
           println(url)
           DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, stock)
-          lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, url))
+          lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, 0, url))
 
         } catch {
           case e: Exception =>
