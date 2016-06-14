@@ -86,19 +86,22 @@ object SnowballStreamingParser {
               val timeStamp = new Date().getTime
               val url = "https://xueqiu.com" + mapInfo.getOrElse("target", "")
 
+              VALogger.warn(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
+
               DBUtil.insertCall(cstmt, userID, title, retweet, reply, url, timeStamp, "")
-              lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, url))
+              lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
 
             }
 
           }
+
         case None => VALogger.error("Parsing failed!")
         case other => VALogger.error("Unknown data structure :" + other)
       }
 
     } catch {
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
     }
 
     cstmt.close()
