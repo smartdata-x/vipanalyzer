@@ -25,7 +25,7 @@ object Scheduler {
 
   def main(args: Array[String]): Unit = {
 
-    val sparkConf = new SparkConf().setMaster("local")
+    val sparkConf = new SparkConf()
       .setAppName("VIP ANALYZER")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2000")
@@ -105,10 +105,8 @@ object Scheduler {
         }
 
       } catch {
-
         case e: NoSuchElementException =>
           VALogger.error("json格式不正确" + json)
-          e.printStackTrace()
       }
 
     } else {
