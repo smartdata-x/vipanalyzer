@@ -1,14 +1,11 @@
 package com.kunyan.vipanalyzer.parser.streaming
 
-import java.sql.CallableStatement
 import java.util.Date
-
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil, RedisUtil}
 import org.jsoup.Jsoup
-
 import scala.util.control.Breaks._
 
 /**
@@ -61,8 +58,8 @@ object MoerStreamingParser {
           val url = "http://moer.jiemian.com/" + list.get(i).select("a").get(0).attr("href")
           val stock = ""
 
-          println(title)
-          println(url)
+          VALogger.info(StringUtil.toJson(Platform.MOER.id.toString, 0, url))
+
           DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, stock)
           lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, 0, url))
 

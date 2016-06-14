@@ -68,7 +68,7 @@ object Scheduler {
 
     val json: Option[Any] = JSON.parseFull(message)
 
-    println(message)
+    VALogger.info(message)
 
     if (json.isDefined) {
 
@@ -85,17 +85,22 @@ object Scheduler {
         attrId match {
 
           case id if id == Platform.SNOW_BALL.id =>
+            VALogger.info("Enter snowball")
             SnowballStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.CNFOL.id =>
+            VALogger.info("Enter cnfol")
             CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
+            VALogger.info("Enter taoguba")
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.MOER.id =>
+            VALogger.info("Enter moer")
             MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.WEIBO.id =>
+            VALogger.info("Enter weibo")
             WeiboStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case _ =>
-            println(attrId)
+            VALogger.info(attrId.toString)
 
         }
 
@@ -103,7 +108,7 @@ object Scheduler {
 
         case e: NoSuchElementException =>
           VALogger.error("json格式不正确" + json)
-
+          e.printStackTrace()
       }
 
     } else {

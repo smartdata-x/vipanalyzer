@@ -18,9 +18,9 @@ object StringUtil {
     message
   }
 
-  def toJson(attrId: String, url: String): String = {
-    val json = "{\"id\":%s, \"attrid\":%s, \"depth\":%d, \"cur_depth\":%d, \"method\":%s, \"url\":\"%s\"}"
-    json.format(new Date().getTime.toString, attrId, 2, 2, "2", url)
+  def toJson(attrId: String, islogin: Int, url: String): String = {
+    val json = "{\"id\":%s, \"islogin\":%d,\"attrid\":%s, \"depth\":%d, \"cur_depth\":%d, \"method\":%s, \"url\":\"%s\"}"
+    json.format(new Date().getTime.toString, islogin, attrId, 2, 2, "2", url)
   }
 
 }

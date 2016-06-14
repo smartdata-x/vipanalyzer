@@ -70,6 +70,10 @@ object TaogubaStreamingParser {
                 val url = "http://www.taoguba.com.cn/Reply" + "/" + objectID + "/" + otherID
                 val stock = ""
 
+
+                VALogger.info(StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
+                VALogger.info(url)
+
                 DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
                 lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
               }
@@ -78,14 +82,14 @@ object TaogubaStreamingParser {
 
           case None => VALogger.error("Parsing failed!")
           case other => VALogger.error("Unknown data structure :" + other)
-
         }
+
       }
+
     } catch {
 
       case e: Exception =>
         VALogger.exception(e)
-
     }
 
     cstmt.close()
