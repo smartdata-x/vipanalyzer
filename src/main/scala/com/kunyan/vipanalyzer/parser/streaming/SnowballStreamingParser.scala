@@ -86,7 +86,7 @@ object SnowballStreamingParser {
               val timeStamp = new Date().getTime
               val url = "https://xueqiu.com" + mapInfo.getOrElse("target", "")
 
-              VALogger.info(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
+              VALogger.warn(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
 
               DBUtil.insertCall(cstmt, userID, title, retweet, reply, url, timeStamp, "")
               lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))

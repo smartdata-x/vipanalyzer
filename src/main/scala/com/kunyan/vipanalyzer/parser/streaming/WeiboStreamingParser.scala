@@ -156,8 +156,8 @@ object WeiboStreamingParser {
                     user = children.getElementsByAttributeValue("class", "W_fb S_txt1").text()
                   }
 
-                  VALogger.info("this is weibo" + totalUrl)
-                  VALogger.info(StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
+                  VALogger.warn("this is weibo" + totalUrl)
+                  VALogger.warn(StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
 
                   DBUtil.insertCall(cstmt, userId, content, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
                   lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))

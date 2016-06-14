@@ -57,7 +57,7 @@ object CnfolStreamingParser {
           val comment = child.select("div.HandleBox span:nth-of-type(3)").text.split(" ").last.toInt
           val url = child.select("div.UserBox a.Tit").attr("href")
 
-          VALogger.info(StringUtil.toJson(Platform.CNFOL.id.toString, 0, url))
+          VALogger.warn(StringUtil.toJson(Platform.CNFOL.id.toString, 0, url))
 
           DBUtil.insertCall(cstmt, userId, title, recommended, reproduce, comment, url, timeStamp, "")
           lazyConn.sendTask(topic, StringUtil.toJson(Platform.CNFOL.id.toString, 0, url))

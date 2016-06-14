@@ -3,7 +3,6 @@ package com.kunyan.vipanalyzer
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
-import com.kunyan.vipanalyzer.parser._
 import com.kunyan.vipanalyzer.parser.streaming._
 import com.kunyan.vipanalyzer.util.DBUtil
 import kafka.serializer.StringDecoder
@@ -42,6 +41,7 @@ object Scheduler {
     val brokerList = (configFile \ "kafka" \ "brokerList").text
     val receiveTopic = (configFile \ "kafka" \ "receive").text
     val sendTopic = (configFile \ "kafka" \ "send").text
+    val snowBallTopic = (configFile \ "kafka" \ "duration").text
     val topicsSet = Set[String](receiveTopic)
 
     val kafkaParams = Map[String, String]("metadata.broker.list" -> brokerList,
@@ -55,7 +55,7 @@ object Scheduler {
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
       rdd.foreach(message => {
-        analyzer(message, connectionsBr.value, sendTopic)
+        analyzer(message, connectionsBr.value, sendTopic, snowBallTopic)
       })
 
     })
@@ -64,11 +64,11 @@ object Scheduler {
     ssc.awaitTermination()
   }
 
-  def analyzer(message: String, lazyConn: LazyConnections, topic: String): Unit = {
+  def analyzer(message: String, lazyConn: LazyConnections, topic: String, snowBallTopic: String): Unit = {
 
     val json: Option[Any] = JSON.parseFull(message)
 
-    VALogger.info(message)
+    VALogger.warn(message)
 
     if (json.isDefined) {
 
@@ -85,22 +85,22 @@ object Scheduler {
         attrId match {
 
           case id if id == Platform.SNOW_BALL.id =>
-            VALogger.info("Enter snowball")
-            SnowballStreamingParser.parse(result._1, result._2, lazyConn, topic)
+            VALogger.warn("Enter snowball")
+            SnowballStreamingParser.parse(result._1, result._2, lazyConn, snowBallTopic)
           case id if id == Platform.CNFOL.id =>
-            VALogger.info("Enter cnfol")
+            VALogger.warn("Enter cnfol")
             CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
-            VALogger.info("Enter taoguba")
+            VALogger.warn("Enter taoguba")
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.MOER.id =>
-            VALogger.info("Enter moer")
+            VALogger.warn("Enter moer")
             MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.WEIBO.id =>
-            VALogger.info("Enter weibo")
+            VALogger.warn("Enter weibo")
             WeiboStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case _ =>
-            VALogger.info(attrId.toString)
+            VALogger.warn(attrId.toString)
 
         }
 

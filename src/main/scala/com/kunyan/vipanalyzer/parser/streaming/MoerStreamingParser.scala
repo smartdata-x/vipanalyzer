@@ -58,7 +58,7 @@ object MoerStreamingParser {
           val url = "http://moer.jiemian.com/" + list.get(i).select("a").get(0).attr("href")
           val stock = ""
 
-          VALogger.info(StringUtil.toJson(Platform.MOER.id.toString, 0, url))
+          VALogger.warn(StringUtil.toJson(Platform.MOER.id.toString, 0, url))
 
           DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, stock)
           lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, 0, url))
