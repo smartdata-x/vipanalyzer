@@ -58,6 +58,7 @@ object WeiboStreamingParser {
             //两个URL对比
             val lastURL = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
             val latestURL = getLatestUrl(newDoc, anotherDoc)
+            VALogger.warn("lasteURL"+ lastURL+"latestURL"+latestURL)
             var div = anotherDoc.get(0)
 
             breakable {
@@ -77,7 +78,10 @@ object WeiboStreamingParser {
                 if (i == 0) {
 
                   if (lastURL != latestURL) {
+                    VALogger.warn("weibo url differ")
                     lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, latestURL)
+                    VALogger.warn(pageUrl + "lastURL: " +lastURL + "latestURL:  "+latestURL)
+                    VALogger.warn("weibo i = 0, break")
                   } else {
                     break()
                   }
@@ -85,6 +89,7 @@ object WeiboStreamingParser {
                 }
 
                 if (lastURL == latestURL) {
+                  VALogger.warn("lastURL == latestURL, break")
                   break()
                 }
 
@@ -102,7 +107,8 @@ object WeiboStreamingParser {
                     break()
                   }
 
-                  val totalUrl = "http://weibo.com" + url + "&type=comment"
+                  val getUrl = url.split("ref=home")(0)
+                  val totalUrl = "http://weibo.com" + getUrl + "type=comment"
                   var content = children.getElementsByAttributeValue("node-type", "feed_list_content").get(0).text()
 
                   if (content.length >= 30) {
@@ -230,7 +236,8 @@ object WeiboStreamingParser {
 
     val url = children.getElementsByAttributeValue("class", "WB_from S_txt2").get(0).select("a").get(0).attr("href")
 
-    val totalUrl = "http://weibo.com" + url + "&type=comment"
+    val getUrl = url.split("ref=home")(0)
+    val totalUrl = "http://weibo.com" + getUrl + "type=comment"
 
     totalUrl
   }

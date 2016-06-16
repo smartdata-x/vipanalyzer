@@ -63,7 +63,7 @@ object TaogubaStreamingParser {
 
                 val date = value.getOrElse("actionDate", "")
                 val fm = new SimpleDateFormat("yyyy-MM-dd HH:mm")
-                val timeStamp = (fm.parse(date).getTime / 1000).toInt
+                val timeStamp = (fm.parse(date).getTime).toInt
                 val userID = value.getOrElse("userID", "")
                 val objectID = value.getOrElse("objectID", "")
                 val otherID = value.getOrElse("OtherID", "")

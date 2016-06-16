@@ -386,6 +386,7 @@ object DBUtil {
 
       case e: Exception =>
         VALogger.error("向MySQL插入数据失败")
+        VALogger.error(params.mkString("]["))
         VALogger.exception(e)
 
     }

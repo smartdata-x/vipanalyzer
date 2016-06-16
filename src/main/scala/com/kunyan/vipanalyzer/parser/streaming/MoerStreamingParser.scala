@@ -26,7 +26,7 @@ object MoerStreamingParser {
     val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertMoerNewArticle(?,?,?,?,?,?,?,?)}")
 
     val lastTitle = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
-    val timeStamp = new Date().getTime / 1000
+    val timeStamp = new Date().getTime
 
     breakable {
 
@@ -40,13 +40,18 @@ object MoerStreamingParser {
           if (title != lastTitle) {
             lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, title)
           } else {
+            VALogger.warn(pageUrl + "lastTitle: " +lastTitle + "title:  "+title)
+            VALogger.warn("moer i = 0, break")
             break()
           }
 
         }
 
-        if (title == lastTitle)
+        if (title == lastTitle){
+          VALogger.warn("lastTitle == title, break")
           break()
+        }
+
 
         try {
 
