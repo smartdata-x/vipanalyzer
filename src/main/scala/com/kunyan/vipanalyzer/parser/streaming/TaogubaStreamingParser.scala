@@ -68,7 +68,8 @@ object TaogubaStreamingParser {
                 val objectID = value.getOrElse("objectID", "")
                 val otherID = value.getOrElse("OtherID", "")
 
-                if(otherID.toInt != 0){ //过滤掉此类ID
+                if (otherID.toInt != 0) {
+                  //过滤掉此类ID
 
                   val url = "http://www.taoguba.com.cn/Article" + "/" + objectID + "/" + otherID
                   val stock = ""
@@ -80,7 +81,7 @@ object TaogubaStreamingParser {
                   lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
 
                 } else {
-                  VALogger.warn("error report: platform taoguba"+"OtherID:   "+otherID + "html:  "+html.toString)
+                  VALogger.warn("error report: platform taoguba" + "OtherID:   " + otherID + "html:  " + html.toString)
                 }
 
               }

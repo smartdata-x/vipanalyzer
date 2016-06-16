@@ -67,13 +67,13 @@ object SnowballStreamingParser {
 
               var latestFlag = ""
 
-              val flag = mapInfo.getOrElse("title","")
+              val flag = mapInfo.getOrElse("title", "")
 
-              if(flag == null){
+              if (flag == null) {
 
-                val text  = mapInfo.getOrElse("description","").toString
+                val text = mapInfo.getOrElse("description", "").toString
 
-                if (text.length > 30){
+                if (text.length > 30) {
                   latestFlag = text.substring(0, 30)
                 } else {
                   latestFlag = text
@@ -94,7 +94,7 @@ object SnowballStreamingParser {
 
                 } else {
 
-                  VALogger.warn(pageUrl + "lastUrl: " +lastUrl + "latestURL:  "+url)
+                  VALogger.warn(pageUrl + "lastUrl: " + lastUrl + "latestURL:  " + url)
                   VALogger.warn("snowball i = 0, break")
                   break()
 
@@ -107,9 +107,9 @@ object SnowballStreamingParser {
                 break()
               }
 
-              val identifyRetweet = mapInfo.getOrElse("retweeted_status","") //转发标志
+              val identifyRetweet = mapInfo.getOrElse("retweeted_status", "") //转发标志
 
-              if(identifyRetweet == null){
+              if (identifyRetweet == null) {
 
                 val userID = mapInfo.getOrElse("user_id", "")
                 val retweet = mapInfo.getOrElse("retweet_count", "").asInstanceOf[Double].toInt
@@ -122,7 +122,7 @@ object SnowballStreamingParser {
 
                 lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
 
-                if(flag != null){
+                if (flag != null) {
 
                   val title = flag
                   DBUtil.insertCall(cstmt, userID, title, retweet, reply, url, timeStamp, "")
@@ -143,7 +143,7 @@ object SnowballStreamingParser {
     } catch {
       case e: Exception =>
         VALogger.exception(e)
-        VALogger.warn("snowball "+ pageUrl)
+        VALogger.warn("snowball " + pageUrl)
     }
 
     cstmt.close()
