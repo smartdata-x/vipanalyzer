@@ -26,8 +26,9 @@ object SnowballStreamingParser {
 
     val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertSnowBallNewArticle(?,?,?,?,?,?,?)}")
 
-    val lastTitle = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
-    VALogger.warn("last Title " + lastTitle)
+    val lastUrl = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
+    VALogger.warn("last URL " + lastUrl)
+
     try {
 
       var index = 0
@@ -61,22 +62,39 @@ object SnowballStreamingParser {
             for (i <- content.indices) {
 
               val mapInfo = content(i)
-              var title = mapInfo.getOrElse("text", "").toString.replaceAll("<[^>]*>", "")
 
-              if (title.length > 30)
-                title = title.substring(0, 30)
+              val url = "https://xueqiu.com" + mapInfo.getOrElse("target", "")
 
+              var latestFlag = ""
+
+              val flag = mapInfo.getOrElse("title","")
+
+              if(flag == null){
+
+                val text  = mapInfo.getOrElse("description","").toString
+
+                if (text.length > 30){
+                  latestFlag = text.substring(0, 30)
+                } else {
+                  latestFlag = text
+                }
+
+              } else {
+
+                latestFlag = flag.toString.replaceAll("<[^>]*>", "")
+              }
 
               if (i == 0) {
 
-                if (lastTitle != title) {
+                if (lastUrl != url) {
 
-                  VALogger.warn("title differ")
-                  lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, title)
+                  VALogger.warn("url differ")
+
+                  lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, url)
 
                 } else {
 
-                  VALogger.warn(pageUrl + "lastTitle: " +lastTitle + "title:  "+title)
+                  VALogger.warn(pageUrl + "lastUrl: " +lastUrl + "latestURL:  "+url)
                   VALogger.warn("snowball i = 0, break")
                   break()
 
@@ -84,22 +102,36 @@ object SnowballStreamingParser {
 
               }
 
-              if (lastTitle == title) {
-                VALogger.warn("lastTitle == title, break")
+              if (lastUrl == url) {
+                VALogger.warn("lastUrl == url, break")
                 break()
               }
 
-              val userID = mapInfo.getOrElse("user_id", "")
-              val retweet = mapInfo.getOrElse("retweet_count", "").asInstanceOf[Double].toInt
-              val reply = mapInfo.getOrElse("reply_count", "").asInstanceOf[Double].toInt
-              val timeStamp = new Date().getTime
-              val url = "https://xueqiu.com" + mapInfo.getOrElse("target", "")
+              val identifyRetweet = mapInfo.getOrElse("retweeted_status","") //转发标志
 
-              VALogger.warn(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
+              if(identifyRetweet == null){
 
-              lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
-              DBUtil.insertCall(cstmt, userID, title, retweet, reply, url, timeStamp, "")
-              VALogger.warn("snowball send task")
+                val userID = mapInfo.getOrElse("user_id", "")
+                val retweet = mapInfo.getOrElse("retweet_count", "").asInstanceOf[Double].toInt
+                val reply = mapInfo.getOrElse("reply_count", "").asInstanceOf[Double].toInt
+                val timeStamp = new Date().getTime
+
+
+
+                VALogger.warn(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
+
+                lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
+
+                if(flag != null){
+
+                  val title = flag
+                  DBUtil.insertCall(cstmt, userID, title, retweet, reply, url, timeStamp, "")
+                }
+
+                VALogger.warn("snowball send task")
+
+              }
+
             }
 
           }
@@ -111,6 +143,7 @@ object SnowballStreamingParser {
     } catch {
       case e: Exception =>
         VALogger.exception(e)
+        VALogger.warn("snowball "+ pageUrl)
     }
 
     cstmt.close()
