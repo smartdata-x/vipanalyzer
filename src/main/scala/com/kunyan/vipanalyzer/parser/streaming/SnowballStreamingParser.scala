@@ -14,6 +14,7 @@ import scala.util.parsing.json.JSON
   * 雪球
   */
 object SnowballStreamingParser {
+
   /**
     * 解析获取信息
     *
@@ -26,7 +27,7 @@ object SnowballStreamingParser {
     val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertSnowBallNewArticle(?,?,?,?,?,?,?)}")
 
     val lastTitle = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
-
+    VALogger.warn("last Title " + lastTitle)
     try {
 
       var index = 0
@@ -60,23 +61,31 @@ object SnowballStreamingParser {
             for (i <- content.indices) {
 
               val mapInfo = content(i)
-              var title = mapInfo.getOrElse("text", "").toString
+              var title = mapInfo.getOrElse("text", "").toString.replaceAll("<[^>]*>", "")
 
-              if (title.length >= 30) {
+              if (title.length > 30)
                 title = title.substring(0, 30)
-              }
+
 
               if (i == 0) {
 
                 if (lastTitle != title) {
+
+                  VALogger.warn("title differ")
                   lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, title)
+
                 } else {
+
+                  VALogger.warn(pageUrl + "lastTitle: " +lastTitle + "title:  "+title)
+                  VALogger.warn("snowball i = 0, break")
                   break()
+
                 }
 
               }
 
               if (lastTitle == title) {
+                VALogger.warn("lastTitle == title, break")
                 break()
               }
 
@@ -88,9 +97,9 @@ object SnowballStreamingParser {
 
               VALogger.warn(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
 
-              DBUtil.insertCall(cstmt, userID, title, retweet, reply, url, timeStamp, "")
               lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
-
+              DBUtil.insertCall(cstmt, userID, title, retweet, reply, url, timeStamp, "")
+              VALogger.warn("snowball send task")
             }
 
           }
