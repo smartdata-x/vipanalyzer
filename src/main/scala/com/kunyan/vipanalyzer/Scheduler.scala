@@ -31,6 +31,7 @@ object Scheduler {
 
     val ssc = new StreamingContext(sparkConf, Seconds(3))
 
+    VALogger.warn("App VIP starts \n")
     val path = args(0)
 
     val configFile = XML.loadFile(path)
@@ -95,6 +96,8 @@ object Scheduler {
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.MOER.id =>
             VALogger.warn("Enter moer")
+            VALogger.warn("THIS IS MOER PAGEURL:        " + result._1)
+            VALogger.warn("************************************")
             MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.WEIBO.id =>
             VALogger.warn("Enter weibo")

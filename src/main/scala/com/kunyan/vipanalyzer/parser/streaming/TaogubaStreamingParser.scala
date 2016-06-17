@@ -63,19 +63,27 @@ object TaogubaStreamingParser {
 
                 val date = value.getOrElse("actionDate", "")
                 val fm = new SimpleDateFormat("yyyy-MM-dd HH:mm")
-                val timeStamp = (fm.parse(date).getTime).toInt
+                val timeStamp = fm.parse(date).getTime
                 val userID = value.getOrElse("userID", "")
                 val objectID = value.getOrElse("objectID", "")
                 val otherID = value.getOrElse("OtherID", "")
-                val url = "http://www.taoguba.com.cn/Reply" + "/" + objectID + "/" + otherID
-                val stock = ""
 
+                if (otherID.toInt != 0) {
+                  //过滤掉此类ID
 
-                VALogger.warn(StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
-                VALogger.warn(url)
+                  val url = "http://www.taoguba.com.cn/Article" + "/" + objectID + "/" + otherID
+                  val stock = ""
 
-                DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
-                lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
+                  VALogger.warn(StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
+                  VALogger.warn(url)
+
+                  DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
+                  lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
+
+                } else {
+                  VALogger.warn("error report: platform taoguba" + "OtherID:   " + otherID + "html:  " + html.toString)
+                }
+
               }
 
             }

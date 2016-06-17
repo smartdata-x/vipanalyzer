@@ -58,7 +58,7 @@ object WeiboStreamingParser {
             //两个URL对比
             val lastURL = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
             val latestURL = getLatestUrl(newDoc, anotherDoc)
-            VALogger.warn("lasteURL"+ lastURL+"latestURL"+latestURL)
+            VALogger.warn("lasteURL" + lastURL + "latestURL" + latestURL)
             var div = anotherDoc.get(0)
 
             breakable {
@@ -80,7 +80,7 @@ object WeiboStreamingParser {
                   if (lastURL != latestURL) {
                     VALogger.warn("weibo url differ")
                     lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, latestURL)
-                    VALogger.warn(pageUrl + "lastURL: " +lastURL + "latestURL:  "+latestURL)
+                    VALogger.warn(pageUrl + "lastURL: " + lastURL + "latestURL:  " + latestURL)
                     VALogger.warn("weibo i = 0, break")
                   } else {
                     break()
@@ -109,11 +109,30 @@ object WeiboStreamingParser {
 
                   val getUrl = url.split("ref=home")(0)
                   val totalUrl = "http://weibo.com" + getUrl + "type=comment"
-                  var content = children.getElementsByAttributeValue("node-type", "feed_list_content").get(0).text()
 
-                  if (content.length >= 30) {
-                    content = content.substring(0, 30)
+                  var result = "" //用户发的文章标题
+
+                  if (children.toString.contains("WB_media_wrap clearfix")) {
+
+                    var title = children.getElementsByAttributeValue("class", "WB_media_wrap clearfix").get(0)
+
+                    if (title != null && title.toString.contains("WB_feed_spec_info SW_fun")) {
+
+                      title = title.getElementsByAttributeValue("class", "WB_feed_spec_info SW_fun").get(0)
+
+                      if (title != null && title.toString.contains("WB_feed_spec_cont")) {
+                        result = title.getElementsByAttributeValue("class", "WB_feed_spec_cont").select("h4").text()
+                      }
+
+                    }
+
                   }
+
+                  //                  var content = children.getElementsByAttributeValue("node-type", "feed_list_content").get(0).text()
+                  //
+                  //                  if (content.length >= 30) {
+                  //                    content = content.substring(0, 30)
+                  //                  }
 
                   var user = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").text()
                   val userCard = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").attr("usercard")
@@ -165,7 +184,7 @@ object WeiboStreamingParser {
                   VALogger.warn("this is weibo" + totalUrl)
                   VALogger.warn(StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
 
-                  DBUtil.insertCall(cstmt, userId, content, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
+                  DBUtil.insertCall(cstmt, userId, result, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
                   lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
                 }
 
