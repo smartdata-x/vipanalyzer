@@ -116,17 +116,11 @@ object SnowballStreamingParser {
                 val reply = mapInfo.getOrElse("reply_count", "").asInstanceOf[Double].toInt
                 val timeStamp = new Date().getTime
 
-
-
                 VALogger.warn(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
 
                 lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
 
-                if (flag != null) {
-
-                  val title = flag
-                  DBUtil.insertCall(cstmt, userID, title, retweet, reply, url, timeStamp, "")
-                }
+                DBUtil.insertCall(cstmt, userID, flag, retweet, reply, url, timeStamp, "") //标题没有就给空
 
                 VALogger.warn("snowball send task")
 

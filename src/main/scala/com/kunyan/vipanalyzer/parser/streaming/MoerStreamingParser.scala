@@ -40,14 +40,14 @@ object MoerStreamingParser {
           if (title != lastTitle) {
             lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, title)
           } else {
-            VALogger.warn(pageUrl + "lastTitle: " +lastTitle + "title:  "+title)
+            VALogger.warn("PageURL: " + pageUrl + "  lastTitle:  " + lastTitle + " title:  " + title)
             VALogger.warn("moer i = 0, break")
             break()
           }
 
         }
 
-        if (title == lastTitle){
+        if (title == lastTitle) {
           VALogger.warn("lastTitle == title, break")
           break()
         }
@@ -65,7 +65,10 @@ object MoerStreamingParser {
 
           VALogger.warn(StringUtil.toJson(Platform.MOER.id.toString, 0, url))
 
+          VALogger.warn("moer insert data")
           DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, stock)
+
+          VALogger.warn("moer send task")
           lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, 0, url))
 
         } catch {
