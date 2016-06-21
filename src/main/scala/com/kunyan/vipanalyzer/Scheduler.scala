@@ -83,6 +83,11 @@ object Scheduler {
         val rowkey = map.get("pos_name").get
         val result = DBUtil.query(tableName, rowkey, lazyConn)
 
+        if (null == result) {
+          VALogger.error("Get empty data from hbase table! Message :  " + message)
+          return
+        }
+
         attrId match {
 
           case id if id == Platform.SNOW_BALL.id =>
