@@ -181,6 +181,10 @@ object WeiboStreamingParser {
                     user = children.getElementsByAttributeValue("class", "W_fb S_txt1").text()
                   }
 
+                  if (result.isEmpty) {
+                    result = user + "的观点："
+                  }
+
                   VALogger.warn("this is weibo" + totalUrl)
                   VALogger.warn(StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
 
