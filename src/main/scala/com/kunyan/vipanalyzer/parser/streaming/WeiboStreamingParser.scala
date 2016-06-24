@@ -50,7 +50,7 @@ object WeiboStreamingParser {
 
         jsonInfo match {
 
-          case Some(mapInfo: Map[String, AnyVal]) => {
+          case Some(mapInfo: Map[String, AnyVal]) =>
 
             val newHtml = mapInfo.get("html").get.toString
             val newDoc = Jsoup.parse(newHtml, "UTF-8").getElementsByAttributeValue("class", "WB_cardwrap WB_feed_type S_bg2")
@@ -58,12 +58,12 @@ object WeiboStreamingParser {
             //两个URL对比
             val lastURL = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
             val latestURL = getLatestUrl(newDoc, anotherDoc)
+            VALogger.warn("lasteURL" + lastURL + "latestURL" + latestURL)
+            var div = anotherDoc.get(0)
 
             breakable {
 
               for (i <- 0 until newDoc.size + anotherDoc.size()) {
-
-                var div = anotherDoc.get(0)
 
                 if (i < anotherDoc.size) {
 
@@ -78,7 +78,10 @@ object WeiboStreamingParser {
                 if (i == 0) {
 
                   if (lastURL != latestURL) {
+                    VALogger.warn("weibo url differ")
                     lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, latestURL)
+                    VALogger.warn(pageUrl + "lastURL: " + lastURL + "latestURL:  " + latestURL)
+                    VALogger.warn("weibo i = 0, break")
                   } else {
                     break()
                   }
@@ -86,46 +89,108 @@ object WeiboStreamingParser {
                 }
 
                 if (lastURL == latestURL) {
+                  VALogger.warn("lastURL == latestURL, break")
                   break()
                 }
 
                 val children = div.getElementsByAttributeValue("class", "WB_detail").get(0)
-                val date = children.getElementsByAttributeValue("class", "WB_from S_txt2").get(0).select("a").get(0).attr("title")
-                val fm = new SimpleDateFormat("yyyy-MM-dd HH:mm")
-                val timeStamp = fm.parse(date).getTime
-                val url = children.getElementsByAttributeValue("class", "WB_from S_txt2").get(0).select("a").get(0).attr("href")
-                val totalUrl = "http://weibo.com" + url + "&type=comment"
-                var content = children.getElementsByAttributeValue("node-type", "feed_list_content").get(0).text()
+                val expand = children.select("div.WB_feed_expand")
 
-                if (content.length >= 30) {
-                  content = content.substring(0, 30)
+                if (expand.isEmpty) {
+
+                  val date = children.getElementsByAttributeValue("class", "WB_from S_txt2").get(0).select("a").get(0).attr("title")
+                  val fm = new SimpleDateFormat("yyyy-MM-dd HH:mm")
+                  val timeStamp = fm.parse(date).getTime
+                  val url = children.getElementsByAttributeValue("class", "WB_from S_txt2").get(0).select("a").get(0).attr("href")
+
+                  if (!url.contains("?ref=home&rid=")) {
+                    break()
+                  }
+
+                  val getUrl = url.split("ref=home")(0)
+                  val totalUrl = "http://weibo.com" + getUrl + "type=comment"
+
+                  var result = "" //用户发的文章标题
+
+                  if (children.toString.contains("WB_media_wrap clearfix")) {
+
+                    var title = children.getElementsByAttributeValue("class", "WB_media_wrap clearfix").get(0)
+
+                    if (title != null && title.toString.contains("WB_feed_spec_info SW_fun")) {
+
+                      title = title.getElementsByAttributeValue("class", "WB_feed_spec_info SW_fun").get(0)
+
+                      if (title != null && title.toString.contains("WB_feed_spec_cont")) {
+                        result = title.getElementsByAttributeValue("class", "WB_feed_spec_cont").select("h4").text()
+                      }
+
+                    }
+
+                  }
+
+                  //                  var content = children.getElementsByAttributeValue("node-type", "feed_list_content").get(0).text()
+                  //
+                  //                  if (content.length >= 30) {
+                  //                    content = content.substring(0, 30)
+                  //                  }
+
+                  var user = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").text()
+                  val userCard = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").attr("usercard")
+                  val userId = userCard.split("id=")(1).split("&")(0)
+                  val botChild = div.getElementsByAttributeValue("class", "WB_feed_handle")
+                  val forward = botChild.select("li span.pos em")
+                  var forwardContent = ""
+
+                  if (forward.size >= 4) {
+                    forwardContent = forward.get(3).text()
+                  } else {
+                    forwardContent = 0.toString
+                  }
+
+                  if (forwardContent.startsWith("转发")) {
+                    forwardContent = 0.toString
+                  }
+
+                  val repeat = botChild.select("li span.pos em")
+                  var repeatContent = ""
+
+                  if (repeat.size >= 6) {
+                    repeatContent = repeat.get(5).text()
+                  } else {
+                    repeatContent = 0.toString
+                  }
+
+                  if (repeatContent.startsWith("评论")) {
+                    repeatContent = 0.toString
+                  }
+
+                  val like = botChild.select("li span.pos em")
+                  var likeContent = ""
+
+                  if (like.size >= 7) {
+                    likeContent = like.get(6).text()
+                  } else {
+                    likeContent = 0.toString
+                  }
+
+                  if (likeContent.startsWith("赞")) {
+                    likeContent = 0.toString
+                  }
+
+                  if (user.isEmpty) {
+                    user = children.getElementsByAttributeValue("class", "W_fb S_txt1").text()
+                  }
+
+                  VALogger.warn("this is weibo" + totalUrl)
+                  VALogger.warn(StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
+
+                  DBUtil.insertCall(cstmt, userId, result, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
+                  lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
                 }
 
-                var user = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").text()
-                val userCard = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").attr("usercard")
-                val userId = userCard.split("id=")(1).split("&")(0)
-                val botChild = div.getElementsByAttributeValue("class", "WB_feed_handle")
-                var forwardContent = botChild.select("li span.pos em").get(3).text
-
-                if (forwardContent.startsWith("转发")) {
-                  forwardContent = 0.toString
-                }
-
-                val repeatContent = botChild.select("li span.pos em").get(5).text
-                val likeContent = botChild.select("li span.pos em").get(6).text
-
-                if (user.isEmpty) {
-                  user = children.getElementsByAttributeValue("class", "W_fb S_txt1").text()
-                }
-
-                println(url)
-                DBUtil.insertCall(cstmt, userId, content, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
-                lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, totalUrl))
               }
 
             }
-
-          }
 
           case None => VALogger.error("Parsing failed!")
           case other => VALogger.error("Unknown data structure :" + other)
@@ -134,10 +199,8 @@ object WeiboStreamingParser {
       }
 
     } catch {
-
       case e: Exception =>
-        e.printStackTrace()
-
+        VALogger.exception(e)
     }
 
     cstmt.close()
@@ -145,7 +208,8 @@ object WeiboStreamingParser {
 
   /**
     * 获取页面时间最新的链接
-    * @param newDoc  提取页面信息
+    *
+    * @param newDoc     提取页面信息
     * @param anotherDoc 提取页面信息
     * @return 返回链接字符串
     */
@@ -153,10 +217,9 @@ object WeiboStreamingParser {
 
     var index = 0
     var lastTime = 0L
+    var div = anotherDoc.get(0)
 
     for (i <- 0 until newDoc.size + anotherDoc.size()) {
-
-      var div = anotherDoc.get(0)
 
       if (i < anotherDoc.size) {
 
@@ -192,7 +255,8 @@ object WeiboStreamingParser {
 
     val url = children.getElementsByAttributeValue("class", "WB_from S_txt2").get(0).select("a").get(0).attr("href")
 
-    val totalUrl = "http://weibo.com" + url + "&type=comment"
+    val getUrl = url.split("ref=home")(0)
+    val totalUrl = "http://weibo.com" + getUrl + "type=comment"
 
     totalUrl
   }

@@ -1,14 +1,11 @@
 package com.kunyan.vipanalyzer.parser.streaming
 
-import java.sql.CallableStatement
 import java.util.Date
-
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil, RedisUtil}
 import org.jsoup.Jsoup
-
 import scala.util.control.Breaks._
 
 /**
@@ -29,7 +26,7 @@ object MoerStreamingParser {
     val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertMoerNewArticle(?,?,?,?,?,?,?,?)}")
 
     val lastTitle = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
-    val timeStamp = new Date().getTime / 1000
+    val timeStamp = new Date().getTime
 
     breakable {
 
@@ -43,13 +40,18 @@ object MoerStreamingParser {
           if (title != lastTitle) {
             lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, title)
           } else {
+            VALogger.warn("PageURL: " + pageUrl + "  lastTitle:  " + lastTitle + " title:  " + title)
+            VALogger.warn("moer i = 0, break")
             break()
           }
 
         }
 
-        if (title == lastTitle)
+        if (title == lastTitle) {
+          VALogger.warn("lastTitle == title, break")
           break()
+        }
+
 
         try {
 
@@ -61,10 +63,13 @@ object MoerStreamingParser {
           val url = "http://moer.jiemian.com/" + list.get(i).select("a").get(0).attr("href")
           val stock = ""
 
-          println(title)
-          println(url)
+          VALogger.warn(StringUtil.toJson(Platform.MOER.id.toString, 0, url))
+
+          VALogger.warn("moer insert data")
           DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, stock)
-          lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, url))
+
+          VALogger.warn("moer send task")
+          lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, 0, url))
 
         } catch {
           case e: Exception =>

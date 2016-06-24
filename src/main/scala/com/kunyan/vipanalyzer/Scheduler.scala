@@ -3,7 +3,6 @@ package com.kunyan.vipanalyzer
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
-import com.kunyan.vipanalyzer.parser._
 import com.kunyan.vipanalyzer.parser.streaming._
 import com.kunyan.vipanalyzer.util.DBUtil
 import kafka.serializer.StringDecoder
@@ -25,13 +24,14 @@ object Scheduler {
 
   def main(args: Array[String]): Unit = {
 
-    val sparkConf = new SparkConf().setMaster("local")
+    val sparkConf = new SparkConf()
       .setAppName("VIP ANALYZER")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2000")
 
     val ssc = new StreamingContext(sparkConf, Seconds(3))
 
+    VALogger.warn("App VIP starts \n")
     val path = args(0)
 
     val configFile = XML.loadFile(path)
@@ -42,6 +42,7 @@ object Scheduler {
     val brokerList = (configFile \ "kafka" \ "brokerList").text
     val receiveTopic = (configFile \ "kafka" \ "receive").text
     val sendTopic = (configFile \ "kafka" \ "send").text
+    val snowBallTopic = (configFile \ "kafka" \ "duration").text
     val topicsSet = Set[String](receiveTopic)
 
     val kafkaParams = Map[String, String]("metadata.broker.list" -> brokerList,
@@ -55,7 +56,7 @@ object Scheduler {
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
       rdd.foreach(message => {
-        analyzer(message, connectionsBr.value, sendTopic)
+        analyzer(message, connectionsBr.value, sendTopic, snowBallTopic)
       })
 
     })
@@ -64,11 +65,11 @@ object Scheduler {
     ssc.awaitTermination()
   }
 
-  def analyzer(message: String, lazyConn: LazyConnections, topic: String): Unit = {
+  def analyzer(message: String, lazyConn: LazyConnections, topic: String, snowBallTopic: String): Unit = {
 
     val json: Option[Any] = JSON.parseFull(message)
 
-    println(message)
+    VALogger.warn(message)
 
     if (json.isDefined) {
 
@@ -82,28 +83,38 @@ object Scheduler {
         val rowkey = map.get("pos_name").get
         val result = DBUtil.query(tableName, rowkey, lazyConn)
 
+        if (null == result) {
+          VALogger.error("Get empty data from hbase table! Message :  " + message)
+          return
+        }
+
         attrId match {
 
           case id if id == Platform.SNOW_BALL.id =>
-            SnowballStreamingParser.parse(result._1, result._2, lazyConn, topic)
+            VALogger.warn("Enter snowball")
+            SnowballStreamingParser.parse(result._1, result._2, lazyConn, snowBallTopic)
           case id if id == Platform.CNFOL.id =>
+            VALogger.warn("Enter cnfol")
             CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
+            VALogger.warn("Enter taoguba")
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.MOER.id =>
+            VALogger.warn("Enter moer")
+            VALogger.warn("THIS IS MOER PAGEURL:        " + result._1)
+            VALogger.warn("************************************")
             MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.WEIBO.id =>
+            VALogger.warn("Enter weibo")
             WeiboStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case _ =>
-            println(attrId)
+            VALogger.warn(attrId.toString)
 
         }
 
       } catch {
-
         case e: NoSuchElementException =>
           VALogger.error("json格式不正确" + json)
-
       }
 
     } else {

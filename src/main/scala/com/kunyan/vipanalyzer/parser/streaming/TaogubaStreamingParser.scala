@@ -63,31 +63,41 @@ object TaogubaStreamingParser {
 
                 val date = value.getOrElse("actionDate", "")
                 val fm = new SimpleDateFormat("yyyy-MM-dd HH:mm")
-                val timeStamp = (fm.parse(date).getTime / 1000).toInt
+                val timeStamp = fm.parse(date).getTime
                 val userID = value.getOrElse("userID", "")
                 val objectID = value.getOrElse("objectID", "")
                 val otherID = value.getOrElse("OtherID", "")
-                val url = "http://www.taoguba.com.cn/Reply" + "/" + objectID + "/" + otherID + "#" + otherID
-                val stock = ""
 
-                println(title)
-                println(url)
-                DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
-                lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, url))
+                if (otherID.toInt != 0) {
+                  //过滤掉此类ID
+
+                  val url = "http://www.taoguba.com.cn/Article" + "/" + objectID + "/" + otherID
+                  val stock = ""
+
+                  VALogger.warn(StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
+                  VALogger.warn(url)
+
+                  DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
+                  lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
+
+                } else {
+                  VALogger.warn("error report: platform taoguba" + "OtherID:   " + otherID + "html:  " + html.toString)
+                }
+
               }
 
             }
 
           case None => VALogger.error("Parsing failed!")
           case other => VALogger.error("Unknown data structure :" + other)
-
         }
+
       }
+
     } catch {
 
       case e: Exception =>
         VALogger.exception(e)
-
     }
 
     cstmt.close()
