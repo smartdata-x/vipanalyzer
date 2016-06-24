@@ -73,7 +73,7 @@ object MoerStreamingParser {
             VALogger.warn("Moer sends task")
             lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, 0, url))
           } else {
-            VALogger.warn("MYSQL data has exception, stop send topic for :  " + url)
+            VALogger.warn("MYSQL data has exception, stop topic for :  " + url)
           }
 
 

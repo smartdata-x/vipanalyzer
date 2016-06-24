@@ -148,7 +148,7 @@ object SnowballStreamingParser {
                   VALogger.warn("Snowball sends task")
                   lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
                 } else {
-                  VALogger.warn("MYSQL data has exception, stop send topic for :  " + url)
+                  VALogger.warn("MYSQL data has exception, stop topic for :  " + url)
                 }
 
               }

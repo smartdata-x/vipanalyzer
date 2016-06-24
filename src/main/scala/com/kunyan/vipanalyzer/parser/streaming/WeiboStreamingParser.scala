@@ -195,7 +195,7 @@ object WeiboStreamingParser {
                     VALogger.warn("Weibo sends task")
                     lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
                   } else {
-                    VALogger.warn("MYSQL data has exception, stop send topic for :  " + url)
+                    VALogger.warn("MYSQL data has exception, stop topic for :  " + url)
                   }
 
                 }

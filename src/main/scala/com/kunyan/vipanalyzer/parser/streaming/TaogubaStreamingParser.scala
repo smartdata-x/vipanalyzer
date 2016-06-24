@@ -84,7 +84,7 @@ object TaogubaStreamingParser {
                     VALogger.warn("Taoguba sends task")
                     lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
                   } else {
-                    VALogger.warn("MYSQL data has exception, stop send topic for :  " + url)
+                    VALogger.warn("MYSQL data has exception, stop topic for :  " + url)
                   }
 
                 } else {
