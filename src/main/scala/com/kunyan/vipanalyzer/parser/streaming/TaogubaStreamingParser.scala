@@ -75,10 +75,17 @@ object TaogubaStreamingParser {
                   val stock = ""
 
                   VALogger.warn(StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
-                  VALogger.warn(url)
 
-                  DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
-                  lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
+                  VALogger.warn("Taoguba inserts data to MYSQL")
+
+                  val sqlFlag = DBUtil.insertCall(cstmt, userID, title, 0, 0, url, timeStamp, stock)
+
+                  if (sqlFlag) {
+                    VALogger.warn("Taoguba sends task")
+                    lazyConn.sendTask(topic, StringUtil.toJson(Platform.TAOGUBA.id.toString, 1, url))
+                  } else {
+                    VALogger.warn("MYSQL data has exception, stop topic for :  " + url)
+                  }
 
                 } else {
                   VALogger.warn("error report: platform taoguba" + "OtherID:   " + otherID + "html:  " + html.toString)

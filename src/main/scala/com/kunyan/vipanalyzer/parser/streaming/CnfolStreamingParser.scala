@@ -59,8 +59,16 @@ object CnfolStreamingParser {
 
           VALogger.warn(StringUtil.toJson(Platform.CNFOL.id.toString, 0, url))
 
-          DBUtil.insertCall(cstmt, userId, title, recommended, reproduce, comment, url, timeStamp, "")
-          lazyConn.sendTask(topic, StringUtil.toJson(Platform.CNFOL.id.toString, 0, url))
+          VALogger.warn("CNFOL inserts data")
+
+          val sqlFlag = DBUtil.insertCall(cstmt, userId, title, recommended, reproduce, comment, url, timeStamp, "")
+
+          if (sqlFlag) {
+            VALogger.warn("CNFOL sends task")
+            lazyConn.sendTask(topic, StringUtil.toJson(Platform.CNFOL.id.toString, 0, url))
+          } else {
+            VALogger.warn("MYSQL data has exception, stop topic for :  " + url)
+          }
 
         } catch {
           case e: Exception =>

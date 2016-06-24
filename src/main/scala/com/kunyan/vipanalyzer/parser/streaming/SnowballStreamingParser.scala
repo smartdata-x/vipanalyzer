@@ -140,11 +140,16 @@ object SnowballStreamingParser {
 
                 VALogger.warn(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
 
-                lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
+                VALogger.warn("Snowball inserts data")
 
-                DBUtil.insertCall(cstmt, userID, flag, retweet, reply, url, timeStamp, "") //标题没有就给空
+                val sqlFlag = DBUtil.insertCall(cstmt, userID, flag, retweet, reply, url, timeStamp, "")
 
-                VALogger.warn("snowball send task")
+                if (sqlFlag){
+                  VALogger.warn("Snowball sends task")
+                  lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
+                } else {
+                  VALogger.warn("MYSQL data has exception, stop topic for :  " + url)
+                }
 
               }
 
