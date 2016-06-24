@@ -29,6 +29,15 @@ object SnowballStreamingParser {
     val lastUrl = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
     VALogger.warn("last URL " + lastUrl)
 
+    var title = ""
+    val user = doc.select("title").text()
+
+    if (user.contains("- 雪球")) {
+      if (user.split("- 雪球").size >= 1) {
+        title = user.split("- 雪球")(0) + "的观点："
+      }
+    }
+
     try {
 
       var index = 0
@@ -67,7 +76,7 @@ object SnowballStreamingParser {
 
               var latestFlag = ""
 
-              val flag = mapInfo.getOrElse("title", "")
+              var flag = mapInfo.getOrElse("title", "")
 
               if (flag == null) {
 
@@ -116,11 +125,24 @@ object SnowballStreamingParser {
                 val reply = mapInfo.getOrElse("reply_count", "").asInstanceOf[Double].toInt
                 val timeStamp = new Date().getTime
 
+                val screenName = mapInfo.getOrElse("user", "").asInstanceOf[Map[String, String]]
+                var name = screenName.getOrElse("screen_name", "")
+
+                if ("" == name) {
+                  name = title
+                } else {
+                  name = name + "的观点："
+                }
+
+                if ("" == flag) {
+                  flag = name
+                }
+
                 VALogger.warn(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
 
                 VALogger.warn("Snowball inserts data")
 
-                val sqlFlag = DBUtil.insertCall(cstmt, userID, flag, retweet, reply, url, timeStamp, "") //标题没有就给空
+                val sqlFlag = DBUtil.insertCall(cstmt, userID, flag, retweet, reply, url, timeStamp, "")
 
                 if (sqlFlag){
                   VALogger.warn("Snowball sends task")
