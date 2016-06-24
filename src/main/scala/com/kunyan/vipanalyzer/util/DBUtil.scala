@@ -281,7 +281,7 @@ object DBUtil {
     } catch {
 
       case e: Exception =>
-//        e.printStackTrace()
+        //        e.printStackTrace()
         null
 
     }
@@ -354,7 +354,7 @@ object DBUtil {
 
   }
 
-  def insertCall(call: CallableStatement, params: Any*): Unit = {
+  def insertCall(call: CallableStatement, params: Any*): Boolean = {
 
     try {
 
@@ -382,6 +382,8 @@ object DBUtil {
 
       call.executeUpdate
 
+      true
+
     } catch {
 
       case e: Exception =>
@@ -389,6 +391,7 @@ object DBUtil {
         VALogger.error(params.mkString("]["))
         VALogger.exception(e)
 
+        false
     }
 
   }

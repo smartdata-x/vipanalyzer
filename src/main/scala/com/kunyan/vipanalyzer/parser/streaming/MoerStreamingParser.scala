@@ -65,11 +65,17 @@ object MoerStreamingParser {
 
           VALogger.warn(StringUtil.toJson(Platform.MOER.id.toString, 0, url))
 
-          VALogger.warn("moer insert data")
-          DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, stock)
+          VALogger.warn("Moer inserts data to MYSQL")
 
-          VALogger.warn("moer send task")
-          lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, 0, url))
+          val sqlFlag = DBUtil.insertCall(cstmt, userId, title, read, buy, price, url, timeStamp, stock)
+
+          if (sqlFlag) {
+            VALogger.warn("Moer sends task")
+            lazyConn.sendTask(topic, StringUtil.toJson(Platform.MOER.id.toString, 0, url))
+          } else {
+            VALogger.warn("MYSQL data has exception, stop send topic for :  " + url)
+          }
+
 
         } catch {
           case e: Exception =>

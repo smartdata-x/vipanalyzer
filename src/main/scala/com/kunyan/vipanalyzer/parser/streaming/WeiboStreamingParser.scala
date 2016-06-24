@@ -181,11 +181,19 @@ object WeiboStreamingParser {
                     user = children.getElementsByAttributeValue("class", "W_fb S_txt1").text()
                   }
 
-                  VALogger.warn("this is weibo" + totalUrl)
                   VALogger.warn(StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
 
-                  DBUtil.insertCall(cstmt, userId, result, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
-                  lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
+                  VALogger.warn("Weibo inserts data to MYSQL")
+
+                  val sqlFlag = DBUtil.insertCall(cstmt, userId, result, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
+
+                  if (sqlFlag) {
+                    VALogger.warn("Weibo sends task")
+                    lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
+                  } else {
+                    VALogger.warn("MYSQL data has exception, stop send topic for :  " + url)
+                  }
+
                 }
 
               }
