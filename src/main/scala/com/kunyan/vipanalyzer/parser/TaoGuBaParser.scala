@@ -29,7 +29,7 @@ object TaoGuBaParser {
 
   def parse(url: String, html: String, lazyConn: LazyConnections, topic: String): Unit = {
 
-    TaogubaStreamingParser.parse(url, html, lazyConn, topic)
+//    TaogubaStreamingParser.parse(url, html, lazyConn, topic)
   }
 
   /**

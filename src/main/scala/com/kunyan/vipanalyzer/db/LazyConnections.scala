@@ -14,10 +14,11 @@ import scala.xml.Elem
 /**
   * Created by yangshuai on 2016/5/11.
   */
-class LazyConnections(createJedis: () => Jedis,
+class LazyConnections(createJedis: () => Jedis,extractSummaryConfiguration: (String, Int),
                       createHbaseConnection: () => org.apache.hadoop.hbase.client.Connection,
                       createProducer: () => Producer[String, String],
                       createMySQLConnection: () => Connection,
+                      createMySQLNewsConnection: () =>Connection,
                       createMySQLPS: () => PreparedStatement) extends Serializable {
 
   lazy val jedis = createJedis()
@@ -25,6 +26,10 @@ class LazyConnections(createJedis: () => Jedis,
   lazy val hbaseConn = createHbaseConnection()
 
   lazy val mysqlConn = createMySQLConnection()
+
+  lazy val mysqlNewsConn = createMySQLNewsConnection()
+
+  val summaryConfiguration = extractSummaryConfiguration
 
   lazy val preparedStatement = createMySQLPS()
 
@@ -137,6 +142,20 @@ object LazyConnections {
       connection
     }
 
+    val createMySQLNewsConnection = () => {
+
+      Class.forName("com.mysql.jdbc.Driver")
+      val connection = DriverManager.getConnection((configFile \ "mysqlNews" \ "url").text, (configFile \ "mysqlNews" \ "username").text, (configFile \ "mysqlNews" \ "password").text)
+
+      sys.addShutdownHook {
+        connection.close()
+      }
+
+      connection
+    }
+
+    val extractSummaryConfiguration = ((configFile \ "summaryConfiguration" \ "ip").text, (configFile \ "summaryConfiguration" \ "port").text.toInt)
+
     val createCNFOLPs = () => {
 
       Class.forName("com.mysql.jdbc.Driver")
@@ -207,7 +226,7 @@ object LazyConnections {
       connection.prepareStatement("INSERT INTO article_weibo (user_id, title, retweet, reply, like_count, url, ts) VALUES (?,?,?,?,?,?,?)")
     }
 
-    new LazyConnections(createJedis, createHbaseConnection, createProducer, createMySQLConnection, createMOERPs)
+    new LazyConnections(createJedis,extractSummaryConfiguration, createHbaseConnection, createProducer, createMySQLConnection, createMySQLNewsConnection, createMOERPs)
 
   }
 

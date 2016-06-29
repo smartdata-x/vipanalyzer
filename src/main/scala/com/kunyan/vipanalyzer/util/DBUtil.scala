@@ -1,12 +1,13 @@
 package com.kunyan.vipanalyzer.util
 
-import java.sql.{CallableStatement, DriverManager}
+import java.sql.{PreparedStatement, Connection, CallableStatement, DriverManager}
 
 import com.ibm.icu.text.CharsetDetector
 import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser.SnowBallParser
+import com.kunyandata.nlpsuit.summary.SummaryExtractor
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.log4j.{Level, LogManager}
@@ -271,7 +272,7 @@ object DBUtil {
       val content = table.get(get).getValue(Bytes.toBytes("basic"), Bytes.toBytes("content"))
 
       if (url == null && content == null) {
-        VALogger.error(s"Get empty data by this table: $tableName and rowkey: $rowkey")
+//        VALogger.error(s"Get empty data by this table: $tableName and rowkey: $rowkey")
         return null
       }
 
@@ -387,9 +388,8 @@ object DBUtil {
     } catch {
 
       case e: Exception =>
-        VALogger.error("向MySQL插入数据失败")
-        VALogger.error(params.mkString("]["))
-        VALogger.exception(e)
+//        VALogger.error("向MySQL插入数据失败")
+//        VALogger.exception(e)
 
         false
     }
@@ -492,5 +492,121 @@ object DBUtil {
     statement.close()
     connection.close()
   }
+
+  /**
+    * 获取摘要
+    *
+    * @author sijiansheng
+    * @param content 正文内容
+    * @return 返回的300字摘要
+    */
+  def interceptData(content: String, number: Int): String = {
+
+    var summary: String = ""
+
+    if (content.length > number) {
+      summary = content.substring(0, number)
+    } else {
+      summary = content
+    }
+
+    summary
+  }
+
+  /**
+    * 获取完成字符(获取最后一个标识符前的数据)
+    *
+    * @param data 原数据
+    * @param sign 标志数据
+    * @return
+    */
+  def getLastSignData(data: String, sign: String): String = {
+
+    if (data.contains(sign))
+      data.substring(0, data.lastIndexOf(sign))
+    else data
+
+  }
+
+  /**
+    * 获取完成字符(获取第一个标识符前的数据)
+    *
+    * @param data 原数据
+    * @param sign 标志数据
+    * @return
+    */
+  def getFirstSignData(data: String, sign: String): String = {
+
+    if (data.contains(sign))
+      data.substring(0, data.indexOf(sign))
+    else data
+
+  }
+
+  def getDigest(url: String, content: String, extractSummaryConfiguration: (String, Int)): String = {
+
+    try {
+
+      SummaryExtractor.extractSummary(content, extractSummaryConfiguration._1, extractSummaryConfiguration._2)
+    } catch {
+
+      case e: Exception =>
+        VALogger.error(s"获取digest错误，url是$url")
+        VALogger.exception(e)
+        null
+
+    }
+
+  }
+
+
+  def getNewStock(lastStock: String, stockDict: scala.collection.Map[scala.Predef.String, scala.Array[scala.Predef.String]]): String = {
+
+    lastStock.split(",").map(cate => {
+      cate + "=" + stockDict(cate).filterNot(_ == cate)(0)
+    }).mkString("&")
+
+  }
+
+
+
+  def insertNewsToMysql(prep: PreparedStatement, params: Any*): Boolean = {
+
+    try {
+
+      for (i <- params.indices) {
+
+        val param = params(i)
+
+        param match {
+
+          case param: String =>
+            prep.setString(i + 1, param)
+          case param: Int =>
+            prep.setInt(i + 1, param)
+          case param: Boolean =>
+            prep.setBoolean(i + 1, param)
+          case param: Long =>
+            prep.setLong(i + 1, param)
+          case param: Double =>
+            prep.setDouble(i + 1, param)
+          case _ =>
+            VALogger.error("Unknown Type")
+
+        }
+      }
+      prep.executeUpdate
+
+      true
+    } catch {
+
+      case e: Exception =>
+        VALogger.exception(e)
+
+        false
+    }
+
+  }
+
 
 }

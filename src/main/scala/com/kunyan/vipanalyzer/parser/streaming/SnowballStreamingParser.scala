@@ -27,7 +27,6 @@ object SnowballStreamingParser {
     val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertSnowBallNewArticle(?,?,?,?,?,?,?)}")
 
     val lastUrl = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
-    VALogger.warn("last URL " + lastUrl)
 
     var title = ""
     val user = doc.select("title").text()
@@ -97,14 +96,8 @@ object SnowballStreamingParser {
 
                 if (lastUrl != url) {
 
-                  VALogger.warn("url differ")
-
                   lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, url)
-
                 } else {
-
-                  VALogger.warn(pageUrl + "lastUrl: " + lastUrl + "latestURL:  " + url)
-                  VALogger.warn("snowball i = 0, break")
                   break()
 
                 }
@@ -112,7 +105,6 @@ object SnowballStreamingParser {
               }
 
               if (lastUrl == url) {
-                VALogger.warn("lastUrl == url, break")
                 break()
               }
 
@@ -138,14 +130,9 @@ object SnowballStreamingParser {
                   flag = name
                 }
 
-                VALogger.warn(StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
-
-                VALogger.warn("Snowball inserts data")
-
                 val sqlFlag = DBUtil.insertCall(cstmt, userID, flag, retweet, reply, url, timeStamp, "")
 
                 if (sqlFlag){
-                  VALogger.warn("Snowball sends task")
                   lazyConn.sendTask(topic, StringUtil.toJson(Platform.SNOW_BALL.id.toString, 0, url))
                 } else {
                   VALogger.warn("MYSQL data has exception, stop topic for :  " + url)

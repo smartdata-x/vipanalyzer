@@ -58,7 +58,6 @@ object WeiboStreamingParser {
             //两个URL对比
             val lastURL = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
             val latestURL = getLatestUrl(newDoc, anotherDoc)
-            VALogger.warn("lasteURL" + lastURL + "latestURL" + latestURL)
             var div = anotherDoc.get(0)
 
             breakable {
@@ -78,10 +77,8 @@ object WeiboStreamingParser {
                 if (i == 0) {
 
                   if (lastURL != latestURL) {
-                    VALogger.warn("weibo url differ")
+
                     lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, latestURL)
-                    VALogger.warn(pageUrl + "lastURL: " + lastURL + "latestURL:  " + latestURL)
-                    VALogger.warn("weibo i = 0, break")
                   } else {
                     break()
                   }
@@ -89,7 +86,6 @@ object WeiboStreamingParser {
                 }
 
                 if (lastURL == latestURL) {
-                  VALogger.warn("lastURL == latestURL, break")
                   break()
                 }
 
@@ -185,14 +181,9 @@ object WeiboStreamingParser {
                     result = user + "的观点："
                   }
 
-                  VALogger.warn(StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
-
-                  VALogger.warn("Weibo inserts data to MYSQL")
-
                   val sqlFlag = DBUtil.insertCall(cstmt, userId, result, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
 
                   if (sqlFlag) {
-                    VALogger.warn("Weibo sends task")
                     lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
                   } else {
                     VALogger.warn("MYSQL data has exception, stop topic for :  " + url)
