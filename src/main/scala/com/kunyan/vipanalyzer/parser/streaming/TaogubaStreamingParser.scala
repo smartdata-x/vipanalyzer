@@ -37,7 +37,15 @@ object TaogubaStreamingParser {
 
     val cstmtArticle = lazyConn.mysqlConn.prepareCall("{call proc_InsertTaogubaNewArticle(?,?,?,?,?,?,?)}")
 
-    val lastValue = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
+    val initial = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
+
+    var lastValue = 0L
+
+    if ("" == initial || null == initial) {
+      lastValue = 0L
+    } else {
+      lastValue = initial.toLong
+    }
 
     val sql = "{call proc_InsertDigestTaoguba(?,?,?,?)}"
 
@@ -67,16 +75,16 @@ object TaogubaStreamingParser {
                 val value = recordValue(i).asInstanceOf[Map[String, String]]
                 val date = value.getOrElse("actionDate", "")
                 val fm = new SimpleDateFormat("yyyy-MM-dd HH:mm")
-
                 val timeStamp = fm.parse(date).getTime
 
                 val identifier = timeStamp
-
                 println(s"time is $timeStamp")
 
                 if (i == 0) {
 
-                  if (identifier > lastValue.toLong) {
+                  VALogger.warn(s"last value is $lastValue")
+
+                  if (identifier > lastValue) {
 
                     VALogger.warn("identifier : " + identifier + " \n lastValue: " + lastValue)
                     VALogger.warn("Put new identifier to the redis")
@@ -88,7 +96,7 @@ object TaogubaStreamingParser {
 
                 }
 
-                if (identifier <= lastValue.toLong) {
+                if (identifier <= lastValue) {
 
                   VALogger.warn("identifier : " + identifier + " \n lastValue: " + lastValue)
                   VALogger.warn("Redis equal value : break")
@@ -99,35 +107,34 @@ object TaogubaStreamingParser {
                 val userID = value.getOrElse("userID", "")
                 val objectID = value.getOrElse("objectID", "")
                 val otherID = value.getOrElse("OtherID", "")
-
                 val userName = value.getOrElse("userName", "")
-
                 val title = userName + "的观点: "
-
                 var content = value.getOrElse("body", "")
 
                 if (content.contains("[quote]")) {
 
                   val text = content.split("[quote]")
+
                   if (text.nonEmpty) {
                     content = text(0)
                   }
+
                 }
 
+                //过滤掉此类ID
                 if (otherID.toInt != 0) {
-                  //过滤掉此类ID
 
                   val url = "http://www.taoguba.com.cn/Article" + "/" + objectID + "/" + otherID
-                  val stock = "" //这边确认一下是否往article_info 插入的stock是空值
+                  val stock = ""
 
                   VALogger.warn(s"Taoguba inserts Data $userID, $title, $url, $timeStamp, $stock")
 
                   val sqlFlag = DBUtil.insertCall(cstmtArticle, userID, title, 0, 0, url, timeStamp, stock)
 
-                  VALogger.warn("Taoguba begins to insert digest to mysql and data to news_info")
-
                   if (sqlFlag) {
                     inputDataToSql(lazyConn, cstmtDigest, newsMysqlStatement, url, title, timeStamp, content, stopWords, classModels, sentimentModels, keyWordDict, kyConf)
+                  } else {
+                    VALogger.warn(s"Taoguba first insert has exception $userID, $title, $url, $timeStamp, $stock")
                   }
 
                 } else {
@@ -173,20 +180,25 @@ object TaogubaStreamingParser {
 
     var digest = ""
     var tempDigest = ""
-    if (content != "")
-      tempDigest = DBUtil.getDigest(url, content, lazyConn.summaryConfiguration)
 
+    if (content != "") {
+      tempDigest = DBUtil.getDigest(url, content, lazyConn.summaryConfiguration)
+    }
 
     if (tempDigest == null) {
       isOk = false
-    } else digest = DBUtil.getFirstSignData(tempDigest, "\t")
+    } else {
+      digest = DBUtil.getFirstSignData(tempDigest, "\t")
+    }
 
     val summary = DBUtil.interceptData(tempDigest, 300)
     val newDigest = DBUtil.interceptData(digest, 500)
     var categories = ("", "", "")
     var sentiment = ""
     var senti = 1
+
     try {
+
       if (tempDigest != "") {
 
         val words = TextPreprocessing.process(tempDigest, stopWords, kyConf)
@@ -197,11 +209,11 @@ object TaogubaStreamingParser {
           senti = 0
 
       } else {
-
         senti = -1
 
       }
     } catch {
+
       case e: Exception =>
         VALogger.exception(e)
         VALogger.error("分词程序异常")
@@ -218,11 +230,22 @@ object TaogubaStreamingParser {
         stock = DBUtil.getNewStock(categories._1, keyWordDict("stockDict"))
 
       stock = DBUtil.getLastSignData(DBUtil.interceptData(stock, 500), "&")
-
+      VALogger.warn(s"Taoguba begins to insert digest to mysql and data to aritcle_info:$digest,$summary,$stock")
       val digestFlag = DBUtil.insertCall(cstmtDigest, url, digest, summary, stock) // 插入article_info digest and summary and stock
 
       //插入news_info 数据
-      DBUtil.insertNewsToMysql(newsMysqlStatement, newsType, Platform.TAOGUBA, title, url, time, categories._2, categories._3, categories._1, newDigest, summary, senti, System.currentTimeMillis(), Platform.TAOGUBA.toString)
+      if (digestFlag) {
+
+        VALogger.warn(s"Taoguba begins to insert digest to mysql and data to news_info $newsType, $Platform.TAOGUBA.id,$title, $url, $time, $categories._2, $categories._3, $categories._1, $newDigest, $summary, $senti,$Platform.TAOGUBA.toString")
+        val newsFlag = DBUtil.insertNewsToMysql(newsMysqlStatement, newsType, Platform.TAOGUBA.id, title, url, time, categories._2, categories._3, categories._1, newDigest, summary, senti, System.currentTimeMillis(), Platform.TAOGUBA.toString)
+
+        if (!newsFlag) {
+          VALogger.warn(s"Taoguba begins to insert digest to mysql and data to news_info error")
+        }
+
+      } else {
+        VALogger.warn(s"Taoguba begins to insert digest to mysql and data to article_info error:$digest,$summary,$stock")
+      }
 
     }
 

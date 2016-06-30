@@ -87,7 +87,6 @@ object Scheduler {
           kyConf
         )
       })
-
     })
 
     ssc.start()
@@ -128,7 +127,7 @@ object Scheduler {
             CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
             VALogger.warn("ENTER TAOGUBA")
-            VALogger.warn("Taoguba get url ["+result._1+"]")
+            VALogger.warn("Taoguba gets url [" + result._1 + "]")
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic,
               stopWords, classModels, sentimentModels, keyWordDict, kyConf)
           case id if id == Platform.MOER.id =>
