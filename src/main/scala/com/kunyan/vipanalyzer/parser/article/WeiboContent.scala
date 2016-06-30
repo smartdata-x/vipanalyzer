@@ -48,9 +48,9 @@ object WeiboContent {
       } else {
         jsonInfo match {
 
-          case Some(mapInfo: Map[String, AnyVal]) => {
+          case Some(mapInfo) => {
 
-            val newHtml = mapInfo.get("html").get.toString
+            val newHtml = mapInfo.asInstanceOf[Map[String, AnyVal]].get("html").get.toString
             val newDoc = Jsoup.parse(newHtml, "UTF-8")
             val children = newDoc.getElementsByAttribute("tbinfo").get(0)
             val textComment = children.getElementsByAttributeValue("node-type", "feed_list_content").text()

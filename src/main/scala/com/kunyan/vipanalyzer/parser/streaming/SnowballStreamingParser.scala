@@ -61,9 +61,9 @@ object SnowballStreamingParser {
 
       } else jsonInfo match {
 
-        case Some(mapInfo: Map[String, List[Map[String, Any]]]) =>
+        case Some(mapInfo) =>
 
-          val content = mapInfo.getOrElse("statuses", "").asInstanceOf[List[Map[String, Any]]]
+          val content = mapInfo.asInstanceOf[Map[String, List[Map[String, Any]]]].getOrElse("statuses", "").asInstanceOf[List[Map[String, Any]]]
 
           breakable {
 

@@ -27,9 +27,9 @@ object Taoguba {
 
         jsonInfo match {
 
-          case Some(mapInfo: Map[String, AnyVal]) =>
+          case Some(mapInfo) =>
 
-            val recordValue = mapInfo.getOrElse("record", "").asInstanceOf[List[Map[String, AnyVal]]]
+            val recordValue = mapInfo.asInstanceOf[Map[String, AnyVal]].getOrElse("record", "").asInstanceOf[List[Map[String, AnyVal]]]
 
             for (i <- recordValue.indices) {
 
