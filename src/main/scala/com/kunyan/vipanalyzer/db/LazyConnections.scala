@@ -14,7 +14,7 @@ import scala.xml.Elem
 /**
   * Created by yangshuai on 2016/5/11.
   */
-class LazyConnections(createJedis: () => Jedis,extractSummaryConfiguration: (String, Int),
+class LazyConnections(createJedis: () => Jedis,
                       createHbaseConnection: () => org.apache.hadoop.hbase.client.Connection,
                       createProducer: () => Producer[String, String],
                       createMySQLConnection: () => Connection,
@@ -28,8 +28,6 @@ class LazyConnections(createJedis: () => Jedis,extractSummaryConfiguration: (Str
   lazy val mysqlConn = createMySQLConnection()
 
   lazy val mysqlNewsConn = createMySQLNewsConnection()
-
-  val summaryConfiguration = extractSummaryConfiguration
 
   lazy val preparedStatement = createMySQLPS()
 
@@ -154,8 +152,6 @@ object LazyConnections {
       connection
     }
 
-    val extractSummaryConfiguration = ((configFile \ "summaryConfiguration" \ "ip").text, (configFile \ "summaryConfiguration" \ "port").text.toInt)
-
     val createCNFOLPs = () => {
 
       Class.forName("com.mysql.jdbc.Driver")
@@ -226,7 +222,7 @@ object LazyConnections {
       connection.prepareStatement("INSERT INTO article_weibo (user_id, title, retweet, reply, like_count, url, ts) VALUES (?,?,?,?,?,?,?)")
     }
 
-    new LazyConnections(createJedis,extractSummaryConfiguration, createHbaseConnection, createProducer, createMySQLConnection, createMySQLNewsConnection, createMOERPs)
+    new LazyConnections(createJedis, createHbaseConnection, createProducer, createMySQLConnection, createMySQLNewsConnection, createMOERPs)
 
   }
 

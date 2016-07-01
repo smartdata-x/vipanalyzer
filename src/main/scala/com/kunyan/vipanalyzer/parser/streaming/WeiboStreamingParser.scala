@@ -124,12 +124,6 @@ object WeiboStreamingParser {
 
                   }
 
-                  //                  var content = children.getElementsByAttributeValue("node-type", "feed_list_content").get(0).text()
-                  //
-                  //                  if (content.length >= 30) {
-                  //                    content = content.substring(0, 30)
-                  //                  }
-
                   var user = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").text()
                   val userCard = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").attr("usercard")
                   val userId = userCard.split("id=")(1).split("&")(0)

@@ -68,6 +68,8 @@ object Scheduler {
     val sentiModelsBr = ssc.sparkContext.broadcast(sentiModels)
     val keyWordDictBr = ssc.sparkContext.broadcast(keyWordDict)
 
+    val extractSummaryConfiguration = ((configFile \ "summaryConfiguration" \ "ip").text, (configFile \ "summaryConfiguration" \ "port").text.toInt)
+
     val kafkaParams = Map[String, String]("metadata.broker.list" -> brokerList,
       "group.id" -> groupId)
 
@@ -80,6 +82,7 @@ object Scheduler {
 
       rdd.foreach(message => {
         analyzer(message, connectionsBr.value, sendTopic, snowBallTopic,
+          extractSummaryConfiguration,
           stopWordsBr.value,
           classModelsBr.value,
           sentiModelsBr.value,
@@ -94,6 +97,7 @@ object Scheduler {
   }
 
   def analyzer(message: String, lazyConn: LazyConnections, topic: String, snowBallTopic: String,
+               summaryExtraction:(String,Int),
                stopWords: Array[String],
                classModels: scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, java.io.Serializable]]],
                sentimentModels: scala.Predef.Map[scala.Predef.String, scala.Any],
@@ -129,7 +133,7 @@ object Scheduler {
             VALogger.warn("ENTER TAOGUBA")
             VALogger.warn("Taoguba gets url [" + result._1 + "]")
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic,
-              stopWords, classModels, sentimentModels, keyWordDict, kyConf)
+              stopWords, classModels, sentimentModels, keyWordDict, kyConf,summaryExtraction)
           case id if id == Platform.MOER.id =>
             MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.WEIBO.id =>

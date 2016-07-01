@@ -31,7 +31,9 @@ object TaogubaStreamingParser {
             classModels: scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, java.io.Serializable]]],
             sentimentModels: scala.Predef.Map[scala.Predef.String, scala.Any],
             keyWordDict: scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, scala.Array[scala.Predef.String]]],
-            kyConf: KunyanConf) = {
+            kyConf: KunyanConf,
+            summaryExtraction: (String, Int)
+           ) = {
 
     val jsonInfo = JSON.parseFull(html)
 
@@ -132,7 +134,7 @@ object TaogubaStreamingParser {
                   val sqlFlag = DBUtil.insertCall(cstmtArticle, userID, title, 0, 0, url, timeStamp, stock)
 
                   if (sqlFlag) {
-                    inputDataToSql(lazyConn, cstmtDigest, newsMysqlStatement, url, title, timeStamp, content, stopWords, classModels, sentimentModels, keyWordDict, kyConf)
+                    inputDataToSql(lazyConn, cstmtDigest, newsMysqlStatement, url, title, timeStamp, content, stopWords, classModels, sentimentModels, keyWordDict, kyConf, summaryExtraction)
                   } else {
                     VALogger.warn(s"Taoguba first insert has exception $userID, $title, $url, $timeStamp, $stock")
                   }
@@ -174,7 +176,9 @@ object TaogubaStreamingParser {
                      classModels: scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, java.io.Serializable]]],
                      sentimentModels: scala.Predef.Map[scala.Predef.String, scala.Any],
                      keyWordDict: scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, scala.Array[scala.Predef.String]]],
-                     kyConf: KunyanConf): Unit = {
+                     kyConf: KunyanConf,
+                     summaryExtraction: (String, Int)
+                    ): Unit = {
 
     var isOk = true
 
@@ -182,7 +186,7 @@ object TaogubaStreamingParser {
     var tempDigest = ""
 
     if (content != "") {
-      tempDigest = DBUtil.getDigest(url, content, lazyConn.summaryConfiguration)
+      tempDigest = DBUtil.getDigest(url, content, summaryExtraction)
     }
 
     if (tempDigest == null) {

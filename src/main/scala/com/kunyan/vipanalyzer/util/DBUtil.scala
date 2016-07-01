@@ -272,7 +272,7 @@ object DBUtil {
       val content = table.get(get).getValue(Bytes.toBytes("basic"), Bytes.toBytes("content"))
 
       if (url == null && content == null) {
-//        VALogger.error(s"Get empty data by this table: $tableName and rowkey: $rowkey")
+        VALogger.error(s"Get empty data by this table: $tableName and rowkey: $rowkey")
         return null
       }
 
@@ -282,7 +282,7 @@ object DBUtil {
     } catch {
 
       case e: Exception =>
-        //        e.printStackTrace()
+        e.printStackTrace()
         null
 
     }
@@ -309,7 +309,7 @@ object DBUtil {
     } catch {
 
       case e: Exception =>
-        //        e.printStackTrace()
+        e.printStackTrace()
         null
 
     }
@@ -388,8 +388,8 @@ object DBUtil {
     } catch {
 
       case e: Exception =>
-//        VALogger.error("向MySQL插入数据失败")
-//        VALogger.exception(e)
+        VALogger.error("向MySQL插入数据失败")
+        VALogger.exception(e)
 
         false
     }
@@ -569,7 +569,6 @@ object DBUtil {
   }
 
 
-
   def insertNewsToMysql(prep: PreparedStatement, params: Any*): Boolean = {
 
     try {
@@ -602,7 +601,6 @@ object DBUtil {
 
       case e: Exception =>
         VALogger.exception(e)
-
         false
     }
 
