@@ -61,7 +61,7 @@ class LazyConnections(createJedis: () => Jedis,
       producer.send(message)
     } catch {
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
     }
   }
 
@@ -73,7 +73,7 @@ class LazyConnections(createJedis: () => Jedis,
       producer.send(messages: _*)
     } catch {
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
     }
   }
 

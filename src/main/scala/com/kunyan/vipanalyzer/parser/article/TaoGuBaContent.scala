@@ -53,7 +53,7 @@ object TaoGuBaContent {
       (title, content, pictureBuffer)
     } catch {
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
         null
     }
 

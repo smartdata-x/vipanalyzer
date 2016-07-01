@@ -160,7 +160,7 @@ object DBUtil {
 
       case e: Exception =>
         VALogger.error(s"向MySQL插入数据失败: $userId")
-        e.printStackTrace()
+        VALogger.exception(e)
     }
 
   }
@@ -210,7 +210,7 @@ object DBUtil {
 
       case e: Exception =>
         VALogger.error(s"向MySQL插入数据失败: $userId")
-        e.printStackTrace()
+        VALogger.exception(e)
 
     }
   }
@@ -282,7 +282,7 @@ object DBUtil {
     } catch {
 
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
         null
 
     }
@@ -309,7 +309,7 @@ object DBUtil {
     } catch {
 
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
         null
 
     }
@@ -514,7 +514,7 @@ object DBUtil {
   }
 
   /**
-    * 获取完成字符(获取最后一个标识符前的数据)
+    * 获取完成字符(获取最后一个标识符前的字符串)
     *
     * @param data 原数据
     * @param sign 标志数据
@@ -529,7 +529,7 @@ object DBUtil {
   }
 
   /**
-    * 获取完成字符(获取第一个标识符前的数据)
+    * 获取完成字符(获取第一个标识符前的字符串)
     *
     * @param data 原数据
     * @param sign 标志数据

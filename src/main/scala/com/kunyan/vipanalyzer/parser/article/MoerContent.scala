@@ -30,7 +30,7 @@ object MoerContent {
       (title, content)
     } catch {
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
         null
     }
 

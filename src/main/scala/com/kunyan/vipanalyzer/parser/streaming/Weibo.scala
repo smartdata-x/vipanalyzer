@@ -71,7 +71,7 @@ object Weibo {
 
     } catch {
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
         null
     }
 
