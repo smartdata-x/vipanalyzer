@@ -50,15 +50,14 @@ object WeiboStreamingParser {
 
         jsonInfo match {
 
-          case Some(mapInfo: Map[String, AnyVal]) =>
+          case Some(mapInfo) =>
 
-            val newHtml = mapInfo.get("html").get.toString
+            val newHtml = mapInfo.asInstanceOf[Map[String, AnyVal]].get("html").get.toString
             val newDoc = Jsoup.parse(newHtml, "UTF-8").getElementsByAttributeValue("class", "WB_cardwrap WB_feed_type S_bg2")
             val anotherDoc = Jsoup.parse(newHtml, "UTF-8").getElementsByAttributeValue("class", "WB_cardwrap WB_feed_type S_bg2 WB_feed_vipcover")
             //两个URL对比
             val lastURL = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)
             val latestURL = getLatestUrl(newDoc, anotherDoc)
-            VALogger.warn("lasteURL" + lastURL + "latestURL" + latestURL)
             var div = anotherDoc.get(0)
 
             breakable {
@@ -78,10 +77,8 @@ object WeiboStreamingParser {
                 if (i == 0) {
 
                   if (lastURL != latestURL) {
-                    VALogger.warn("weibo url differ")
+
                     lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, latestURL)
-                    VALogger.warn(pageUrl + "lastURL: " + lastURL + "latestURL:  " + latestURL)
-                    VALogger.warn("weibo i = 0, break")
                   } else {
                     break()
                   }
@@ -89,7 +86,6 @@ object WeiboStreamingParser {
                 }
 
                 if (lastURL == latestURL) {
-                  VALogger.warn("lastURL == latestURL, break")
                   break()
                 }
 
@@ -127,12 +123,6 @@ object WeiboStreamingParser {
                     }
 
                   }
-
-                  //                  var content = children.getElementsByAttributeValue("node-type", "feed_list_content").get(0).text()
-                  //
-                  //                  if (content.length >= 30) {
-                  //                    content = content.substring(0, 30)
-                  //                  }
 
                   var user = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").text()
                   val userCard = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").attr("usercard")
@@ -185,14 +175,9 @@ object WeiboStreamingParser {
                     result = user + "的观点："
                   }
 
-                  VALogger.warn(StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
-
-                  VALogger.warn("Weibo inserts data to MYSQL")
-
                   val sqlFlag = DBUtil.insertCall(cstmt, userId, result, forwardContent.toInt, repeatContent.toInt, likeContent.toInt, totalUrl, timeStamp, "")
 
                   if (sqlFlag) {
-                    VALogger.warn("Weibo sends task")
                     lazyConn.sendTask(topic, StringUtil.toJson(Platform.WEIBO.id.toString, 1, totalUrl))
                   } else {
                     VALogger.warn("MYSQL data has exception, stop topic for :  " + url)

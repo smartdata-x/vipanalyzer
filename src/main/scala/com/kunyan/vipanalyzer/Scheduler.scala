@@ -5,6 +5,9 @@ import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser.streaming._
 import com.kunyan.vipanalyzer.util.DBUtil
+import com.kunyandata.nlpsuit.classification.Bayes
+import com.kunyandata.nlpsuit.sentiment.PredictWithNb
+import com.kunyandata.nlpsuit.util.KunyanConf
 import kafka.serializer.StringDecoder
 import org.apache.log4j.{Level, LogManager}
 import org.apache.spark.SparkConf
@@ -32,6 +35,7 @@ object Scheduler {
     val ssc = new StreamingContext(sparkConf, Seconds(3))
 
     VALogger.warn("App VIP starts \n")
+
     val path = args(0)
 
     val configFile = XML.loadFile(path)
@@ -45,6 +49,27 @@ object Scheduler {
     val snowBallTopic = (configFile \ "kafka" \ "duration").text
     val topicsSet = Set[String](receiveTopic)
 
+    val stopWordsPath = (configFile \ "segment" \ "stopWords").text
+    val modelsPath = (configFile \ "segment" \ "classModelAddress").text
+    val sentiPath = (configFile \ "segment" \ "sentimentModelAddress").text
+    val keyWordDictPath = (configFile \ "segment" \ "keyWords").text
+
+    val kyConf = new KunyanConf()
+
+    kyConf.set((configFile \ "segment" \ "ip").text, (configFile \ "segment" \ "port").text.toInt)
+
+    val stopWords = Bayes.getStopWords(stopWordsPath)
+    val classModels = Bayes.initModels(modelsPath)
+    val sentiModels = PredictWithNb.init(sentiPath)
+    val keyWordDict = Bayes.initGrepDicts(keyWordDictPath)
+
+    val stopWordsBr = ssc.sparkContext.broadcast(stopWords)
+    val classModelsBr = ssc.sparkContext.broadcast(classModels)
+    val sentiModelsBr = ssc.sparkContext.broadcast(sentiModels)
+    val keyWordDictBr = ssc.sparkContext.broadcast(keyWordDict)
+
+    val extractSummaryConfiguration = ((configFile \ "summaryConfiguration" \ "ip").text, (configFile \ "summaryConfiguration" \ "port").text.toInt)
+
     val kafkaParams = Map[String, String]("metadata.broker.list" -> brokerList,
       "group.id" -> groupId)
 
@@ -56,20 +81,30 @@ object Scheduler {
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
       rdd.foreach(message => {
-        analyzer(message, connectionsBr.value, sendTopic, snowBallTopic)
+        analyzer(message, connectionsBr.value, sendTopic, snowBallTopic,
+          extractSummaryConfiguration,
+          stopWordsBr.value,
+          classModelsBr.value,
+          sentiModelsBr.value,
+          keyWordDictBr.value,
+          kyConf
+        )
       })
-
     })
 
     ssc.start()
     ssc.awaitTermination()
   }
 
-  def analyzer(message: String, lazyConn: LazyConnections, topic: String, snowBallTopic: String): Unit = {
+  def analyzer(message: String, lazyConn: LazyConnections, topic: String, snowBallTopic: String,
+               summaryExtraction:(String,Int),
+               stopWords: Array[String],
+               classModels: scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, java.io.Serializable]]],
+               sentimentModels: scala.Predef.Map[scala.Predef.String, scala.Any],
+               keyWordDict: scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, scala.Array[scala.Predef.String]]],
+               kyConf: KunyanConf): Unit = {
 
     val json: Option[Any] = JSON.parseFull(message)
-
-    VALogger.warn(message)
 
     if (json.isDefined) {
 
@@ -91,21 +126,17 @@ object Scheduler {
         attrId match {
 
           case id if id == Platform.SNOW_BALL.id =>
-            VALogger.warn("Enter snowball")
             SnowballStreamingParser.parse(result._1, result._2, lazyConn, snowBallTopic)
           case id if id == Platform.CNFOL.id =>
-            VALogger.warn("Enter cnfol")
             CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
-            VALogger.warn("Enter taoguba")
-            TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic)
+            VALogger.warn("ENTER TAOGUBA")
+            VALogger.warn("Taoguba gets url [" + result._1 + "]")
+            TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic,
+              stopWords, classModels, sentimentModels, keyWordDict, kyConf,summaryExtraction)
           case id if id == Platform.MOER.id =>
-            VALogger.warn("Enter moer")
-            VALogger.warn("THIS IS MOER PAGEURL:        " + result._1)
-            VALogger.warn("************************************")
             MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.WEIBO.id =>
-            VALogger.warn("Enter weibo")
             WeiboStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case _ =>
             VALogger.warn(attrId.toString)

@@ -57,14 +57,9 @@ object CnfolStreamingParser {
           val comment = child.select("div.HandleBox span:nth-of-type(3)").text.split(" ").last.toInt
           val url = child.select("div.UserBox a.Tit").attr("href")
 
-          VALogger.warn(StringUtil.toJson(Platform.CNFOL.id.toString, 0, url))
-
-          VALogger.warn("CNFOL inserts data")
-
           val sqlFlag = DBUtil.insertCall(cstmt, userId, title, recommended, reproduce, comment, url, timeStamp, "")
 
           if (sqlFlag) {
-            VALogger.warn("CNFOL sends task")
             lazyConn.sendTask(topic, StringUtil.toJson(Platform.CNFOL.id.toString, 0, url))
           } else {
             VALogger.warn("MYSQL data has exception, stop topic for :  " + url)

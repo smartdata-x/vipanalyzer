@@ -18,6 +18,7 @@ class LazyConnections(createJedis: () => Jedis,
                       createHbaseConnection: () => org.apache.hadoop.hbase.client.Connection,
                       createProducer: () => Producer[String, String],
                       createMySQLConnection: () => Connection,
+                      createMySQLNewsConnection: () =>Connection,
                       createMySQLPS: () => PreparedStatement) extends Serializable {
 
   lazy val jedis = createJedis()
@@ -25,6 +26,8 @@ class LazyConnections(createJedis: () => Jedis,
   lazy val hbaseConn = createHbaseConnection()
 
   lazy val mysqlConn = createMySQLConnection()
+
+  lazy val mysqlNewsConn = createMySQLNewsConnection()
 
   lazy val preparedStatement = createMySQLPS()
 
@@ -58,7 +61,7 @@ class LazyConnections(createJedis: () => Jedis,
       producer.send(message)
     } catch {
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
     }
   }
 
@@ -70,7 +73,7 @@ class LazyConnections(createJedis: () => Jedis,
       producer.send(messages: _*)
     } catch {
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
     }
   }
 
@@ -129,6 +132,18 @@ object LazyConnections {
 
       Class.forName("com.mysql.jdbc.Driver")
       val connection = DriverManager.getConnection((configFile \ "mysql" \ "url").text, (configFile \ "mysql" \ "username").text, (configFile \ "mysql" \ "password").text)
+
+      sys.addShutdownHook {
+        connection.close()
+      }
+
+      connection
+    }
+
+    val createMySQLNewsConnection = () => {
+
+      Class.forName("com.mysql.jdbc.Driver")
+      val connection = DriverManager.getConnection((configFile \ "mysqlNews" \ "url").text, (configFile \ "mysqlNews" \ "username").text, (configFile \ "mysqlNews" \ "password").text)
 
       sys.addShutdownHook {
         connection.close()
@@ -207,7 +222,7 @@ object LazyConnections {
       connection.prepareStatement("INSERT INTO article_weibo (user_id, title, retweet, reply, like_count, url, ts) VALUES (?,?,?,?,?,?,?)")
     }
 
-    new LazyConnections(createJedis, createHbaseConnection, createProducer, createMySQLConnection, createMOERPs)
+    new LazyConnections(createJedis, createHbaseConnection, createProducer, createMySQLConnection, createMySQLNewsConnection, createMOERPs)
 
   }
 

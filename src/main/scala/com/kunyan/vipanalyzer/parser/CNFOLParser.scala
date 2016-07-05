@@ -107,7 +107,7 @@ object CNFOLParser {
     } catch {
 
       case e: Exception =>
-        e.printStackTrace()
+        VALogger.exception(e)
        VALogger.warn(s"Invalid data: $url")
 
     }
@@ -218,7 +218,7 @@ object CNFOLParser {
         lazyConn.sendTask(topic, StringUtil.getUrlJsonString(Platform.CNFOL.id, url, 1))
       } catch {
         case e: Exception =>
-          e.printStackTrace()
+          VALogger.exception(e)
          VALogger.warn("Page with invalid DOM: " + url)
       }
 

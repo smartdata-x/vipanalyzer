@@ -64,7 +64,7 @@ object UpdatePortrait {
       } catch {
 
         case e: Exception =>
-          e.printStackTrace()
+          VALogger.exception(e)
           VALogger.warn(s"Invalid html with userId: $userId")
 
       }
