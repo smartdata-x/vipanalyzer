@@ -19,12 +19,15 @@ class SnowballSteamingParserTest extends FlatSpec with Matchers {
     val doc = Jsoup.parse(html, "UTF-8")
 
     var title = ""
+
     val user = doc.select("title").text()
 
     if (user.contains("- 雪球")) {
+
       if (user.split("- 雪球").size >= 1) {
         title = user.split("- 雪球")(0) + "的观点："
       }
+
     }
 
     assert(title.nonEmpty)
@@ -89,11 +92,13 @@ class SnowballSteamingParserTest extends FlatSpec with Matchers {
             if (identifyRetweet == null) {
 
               val userID = mapInfo.getOrElse("user_id", "")
-              println(userID)
+
               val retweet = mapInfo.getOrElse("retweet_count", "").asInstanceOf[Double].toInt
+
               val reply = mapInfo.getOrElse("reply_count", "").asInstanceOf[Double].toInt
 
               val screenName = mapInfo.getOrElse("user", "").asInstanceOf[Map[String, String]]
+
               var name = screenName.getOrElse("screen_name", "")
 
               if ("" == name) {
@@ -107,11 +112,17 @@ class SnowballSteamingParserTest extends FlatSpec with Matchers {
               }
 
               assert(title.nonEmpty)
+
               assert(userID.toString.nonEmpty)
+
               assert(retweet >= 0)
+
               assert(reply >= 0)
+
               assert(name.nonEmpty)
+
               assert(url.nonEmpty)
+
               assert(flag.toString.nonEmpty)
 
             }

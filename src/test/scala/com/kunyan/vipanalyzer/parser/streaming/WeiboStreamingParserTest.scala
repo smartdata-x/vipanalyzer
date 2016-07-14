@@ -47,7 +47,9 @@ class WeiboStreamingParserTest extends FlatSpec with Matchers {
         case Some(mapInfo) =>
 
           val newHtml = mapInfo.asInstanceOf[Map[String, AnyVal]].get("html").get.toString
+
           val newDoc = Jsoup.parse(newHtml, "UTF-8").getElementsByAttributeValue("class", "WB_cardwrap WB_feed_type S_bg2")
+
           val anotherDoc = Jsoup.parse(newHtml, "UTF-8").getElementsByAttributeValue("class", "WB_cardwrap WB_feed_type S_bg2 WB_feed_vipcover")
 
           var div = anotherDoc.get(0)
@@ -67,13 +69,17 @@ class WeiboStreamingParserTest extends FlatSpec with Matchers {
               }
 
               val children = div.getElementsByAttributeValue("class", "WB_detail").get(0)
+
               val expand = children.select("div.WB_feed_expand")
 
               if (expand.isEmpty) {
 
                 val date = children.getElementsByAttributeValue("class", "WB_from S_txt2").get(0).select("a").get(0).attr("title")
+
                 val fm = new SimpleDateFormat("yyyy-MM-dd HH:mm")
+
                 val timeStamp = fm.parse(date).getTime
+
                 val url = children.getElementsByAttributeValue("class", "WB_from S_txt2").get(0).select("a").get(0).attr("href")
 
                 if (!url.contains("?ref=home&rid=")) {
@@ -105,10 +111,15 @@ class WeiboStreamingParserTest extends FlatSpec with Matchers {
                 }
 
                 var user = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").text()
+
                 val userCard = children.getElementsByAttributeValue("class", "W_f14 W_fb S_txt1").attr("usercard")
+
                 val userId = userCard.split("id=")(1).split("&")(0)
+
                 val botChild = div.getElementsByAttributeValue("class", "WB_feed_handle")
+
                 val forward = botChild.select("li span.pos em")
+
                 var forwardContent = ""
 
                 if (forward.size >= 4) {

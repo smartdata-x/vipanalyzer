@@ -22,11 +22,17 @@ class CnfolStreamingParserTest extends FlatSpec with Matchers {
     for (i <- 0 until list.size) {
 
       val child = list.get(i)
+
       val title = child.select("div.UserBox a.Tit").text()
+
       val userId = child.select("div.UserBox a.Name").attr("href").split("/").last
+
       val recommended = child.select("div.UserBox a.Tit i.TuiJian").size().toShort
+
       val reproduce = child.select("div.HandleBox span:nth-of-type(2)").text.split(" ").last.toInt
+
       val comment = child.select("div.HandleBox span:nth-of-type(3)").text.split(" ").last.toInt
+
       val url = child.select("div.UserBox a.Tit").attr("href")
 
       assert(title.nonEmpty)

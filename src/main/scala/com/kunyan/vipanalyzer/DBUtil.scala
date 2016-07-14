@@ -172,10 +172,12 @@ object DBUtil {
 
       prep.setString(1, userId)
       prep.setString(2, title)
+
       if (recommend)
         prep.setInt(3, 1)
       else
         prep.setInt(3, 0)
+
       prep.setInt(4, read)
       prep.setInt(5, comment)
       prep.setString(6, url)

@@ -30,7 +30,6 @@ class MoerStreamingParserTest extends FlatSpec with Matchers{
 
       assert(url.startsWith("http://moer.jiemian.com/articleDetails.htm?articleId="))
 
-      println(s"$title + $url")
     }
 
   }

@@ -34,13 +34,19 @@ class TaogubaStreamingParserTest extends FlatSpec with Matchers {
             for (i <- recordValue.indices) {
 
               val value = recordValue(i).asInstanceOf[Map[String, String]]
+
               val date = value.getOrElse("actionDate", "")
 
               val userID = value.getOrElse("userID", "")
+
               val objectID = value.getOrElse("objectID", "")
+
               val otherID = value.getOrElse("OtherID", "")
+
               val userName = value.getOrElse("userName", "")
+
               val title = userName + "的观点: "
+
               var content = value.getOrElse("body", "")
 
               if (content.contains("[quote]")) {
