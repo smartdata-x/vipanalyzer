@@ -18,6 +18,8 @@ class WeiboStreamingParserTest extends FlatSpec with Matchers {
 
     val html = Source.fromFile("/vipanalyzer/src/main/resources/test_html/weibo.html").mkString
 
+    assert(html.nonEmpty)
+
     val doc = Jsoup.parse(html, "UTF-8")
 
     var index = 0
@@ -168,6 +170,8 @@ class WeiboStreamingParserTest extends FlatSpec with Matchers {
             }
 
           }
+
+        case None => println("content is null!")
 
       }
 
