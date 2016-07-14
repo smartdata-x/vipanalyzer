@@ -58,7 +58,6 @@ class TaogubaStreamingParserTest extends FlatSpec with Matchers {
 
                 val url = "http://www.taoguba.com.cn/Article" + "/" + objectID + "/" + otherID
 
-//                println(s"$userID+$objectID+$otherID+$userName+$title+$content")
                 assert(userID.nonEmpty)
 
                 assert(objectID.nonEmpty)
@@ -76,6 +75,8 @@ class TaogubaStreamingParserTest extends FlatSpec with Matchers {
             }
 
           }
+
+        case None => println("content is null!")
 
       }
 

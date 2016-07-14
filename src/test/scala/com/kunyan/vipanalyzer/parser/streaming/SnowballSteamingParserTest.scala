@@ -8,11 +8,13 @@ import scala.io.Source
 /**
   * Created by niujiaojiao on 2016/7/12.
   */
-class SnowballSteamingParserTest extends FlatSpec with Matchers{
+class SnowballSteamingParserTest extends FlatSpec with Matchers {
 
   it should "parse platform snowball correctly" in {
 
     val html = Source.fromFile("/vipanalyzer/src/main/resources/test_html/snowball.html").mkString
+
+    assert(html.nonEmpty)
 
     val doc = Jsoup.parse(html, "UTF-8")
 
@@ -47,72 +49,77 @@ class SnowballSteamingParserTest extends FlatSpec with Matchers{
 
       assert(jsonInfo.nonEmpty)
 
-    } else jsonInfo match {
+    } else {
 
-      case Some(mapInfo) =>
+      jsonInfo match {
 
-        val content = mapInfo.asInstanceOf[Map[String, List[Map[String, Any]]]].getOrElse("statuses", "").asInstanceOf[List[Map[String, Any]]]
+        case Some(mapInfo) =>
 
-        for (i <- content.indices) {
+          val content = mapInfo.asInstanceOf[Map[String, List[Map[String, Any]]]].getOrElse("statuses", "").asInstanceOf[List[Map[String, Any]]]
 
-          val mapInfo = content(i)
+          for (i <- content.indices) {
 
-          val url = "https://xueqiu.com" + mapInfo.getOrElse("target", "")
+            val mapInfo = content(i)
 
-          assert(mapInfo.getOrElse("target", "").toString.nonEmpty)
+            val url = "https://xueqiu.com" + mapInfo.getOrElse("target", "")
 
-          var latestFlag = ""
+            assert(mapInfo.getOrElse("target", "").toString.nonEmpty)
 
-          var flag = mapInfo.getOrElse("title", "")
+            var latestFlag = ""
 
-          if (flag == null) {
+            var flag = mapInfo.getOrElse("title", "")
 
-            val text = mapInfo.getOrElse("description", "").toString
+            if (flag == null) {
 
-            if (text.length > 30) {
-              latestFlag = text.substring(0, 30)
+              val text = mapInfo.getOrElse("description", "").toString
+
+              if (text.length > 30) {
+                latestFlag = text.substring(0, 30)
+              } else {
+                latestFlag = text
+              }
+
             } else {
-              latestFlag = text
+
+              latestFlag = flag.toString.replaceAll("<[^>]*>", "")
             }
 
-          } else {
+            val identifyRetweet = mapInfo.getOrElse("retweeted_status", "") //转发标志
 
-            latestFlag = flag.toString.replaceAll("<[^>]*>", "")
+            if (identifyRetweet == null) {
+
+              val userID = mapInfo.getOrElse("user_id", "")
+              println(userID)
+              val retweet = mapInfo.getOrElse("retweet_count", "").asInstanceOf[Double].toInt
+              val reply = mapInfo.getOrElse("reply_count", "").asInstanceOf[Double].toInt
+
+              val screenName = mapInfo.getOrElse("user", "").asInstanceOf[Map[String, String]]
+              var name = screenName.getOrElse("screen_name", "")
+
+              if ("" == name) {
+                name = title
+              } else {
+                name = name + "的观点："
+              }
+
+              if ("" == flag) {
+                flag = name
+              }
+
+              assert(title.nonEmpty)
+              assert(userID.toString.nonEmpty)
+              assert(retweet >= 0)
+              assert(reply >= 0)
+              assert(name.nonEmpty)
+              assert(url.nonEmpty)
+              assert(flag.toString.nonEmpty)
+
+            }
+
           }
 
-          val identifyRetweet = mapInfo.getOrElse("retweeted_status", "") //转发标志
-
-          if (identifyRetweet == null) {
-
-            val userID = mapInfo.getOrElse("user_id", "")
-            println(userID)
-            val retweet = mapInfo.getOrElse("retweet_count", "").asInstanceOf[Double].toInt
-            val reply = mapInfo.getOrElse("reply_count", "").asInstanceOf[Double].toInt
-
-            val screenName = mapInfo.getOrElse("user", "").asInstanceOf[Map[String, String]]
-            var name = screenName.getOrElse("screen_name", "")
-
-            if ("" == name) {
-              name = title
-            } else {
-              name = name + "的观点："
-            }
-
-            if ("" == flag) {
-              flag = name
-            }
-
-            assert(title.nonEmpty)
-            assert(userID.toString.nonEmpty)
-            assert(retweet>=0)
-            assert(reply>=0)
-            assert(name.nonEmpty)
-            assert(url.nonEmpty)
-            assert(flag.toString.nonEmpty)
-
-          }
-
-        }
+        case None => println("content is null!")
+      }
 
     }
 

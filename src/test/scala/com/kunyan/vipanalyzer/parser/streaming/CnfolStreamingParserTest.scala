@@ -13,6 +13,8 @@ class CnfolStreamingParserTest extends FlatSpec with Matchers {
 
     val html = Source.fromFile("/vipanalyzer/src/main/resources/test_html/cnfol.html").mkString
 
+    assert(html.nonEmpty)
+
     val doc = Jsoup.parse(html, "UTF-8")
 
     val list = doc.select("div#Tab1 div.TabItem ul li")
@@ -21,7 +23,6 @@ class CnfolStreamingParserTest extends FlatSpec with Matchers {
 
       val child = list.get(i)
       val title = child.select("div.UserBox a.Tit").text()
-
       val userId = child.select("div.UserBox a.Name").attr("href").split("/").last
       val recommended = child.select("div.UserBox a.Tit i.TuiJian").size().toShort
       val reproduce = child.select("div.HandleBox span:nth-of-type(2)").text.split(" ").last.toInt

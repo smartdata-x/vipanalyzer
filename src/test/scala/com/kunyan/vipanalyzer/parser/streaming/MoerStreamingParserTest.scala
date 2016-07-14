@@ -14,6 +14,8 @@ class MoerStreamingParserTest extends FlatSpec with Matchers{
 
     val html = Source.fromFile("/vipanalyzer/src/main/resources/test_html/moer.html").mkString
 
+    assert(html.nonEmpty)
+
     val doc = Jsoup.parse(html, "UTF-8")
 
     val list = doc.getElementsByAttributeValue("class", "blu authortab-list").select("tr")
@@ -32,4 +34,5 @@ class MoerStreamingParserTest extends FlatSpec with Matchers{
     }
 
   }
+
 }
