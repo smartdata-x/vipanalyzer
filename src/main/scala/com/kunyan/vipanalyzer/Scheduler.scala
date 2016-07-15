@@ -4,7 +4,6 @@ import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser.streaming._
-import com.kunyan.vipanalyzer.util.DBUtil
 import com.kunyandata.nlpsuit.classification.Bayes
 import com.kunyandata.nlpsuit.sentiment.PredictWithNb
 import com.kunyandata.nlpsuit.util.KunyanConf
@@ -81,6 +80,7 @@ object Scheduler {
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
       rdd.foreach(message => {
+
         analyzer(message, connectionsBr.value, sendTopic, snowBallTopic,
           extractSummaryConfiguration,
           stopWordsBr.value,
@@ -89,7 +89,9 @@ object Scheduler {
           keyWordDictBr.value,
           kyConf
         )
-      })
+
+      }
+      )
     })
 
     ssc.start()
