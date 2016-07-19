@@ -4,6 +4,7 @@ import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser.streaming._
+import com.kunyan.vipanalyzer.util.DBUtil
 import com.kunyandata.nlpsuit.classification.Bayes
 import com.kunyandata.nlpsuit.sentiment.PredictWithNb
 import com.kunyandata.nlpsuit.util.KunyanConf
@@ -132,8 +133,6 @@ object Scheduler {
           case id if id == Platform.CNFOL.id =>
             CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
-            VALogger.warn("ENTER TAOGUBA")
-            VALogger.warn("Taoguba gets url [" + result._1 + "]")
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic,
               stopWords, classModels, sentimentModels, keyWordDict, kyConf,summaryExtraction)
           case id if id == Platform.MOER.id =>

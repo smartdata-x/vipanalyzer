@@ -1,7 +1,7 @@
 package com.kunyan.vipanalyzer.parser.streaming
 
 import java.text.SimpleDateFormat
-import com.kunyan.vipanalyzer.{StringUtil, DBUtil, RedisUtil}
+import com.kunyan.vipanalyzer.util.{StringUtil, RedisUtil, DBUtil}
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
@@ -206,7 +206,7 @@ object WeiboStreamingParser {
   /**
     * 获取页面时间最新的链接
     *
-    * @param newDoc     提取页面信息
+    * @param newDoc     提取页面信息MySQL - vip@222.73.34.104
     * @param anotherDoc 提取页面信息
     * @return 返回链接字符串
     */

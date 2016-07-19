@@ -2,9 +2,9 @@ package com.kunyan.vipanalyzer.parser
 
 import java.sql.DriverManager
 
+import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil, DateUtil}
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
-import com.kunyan.vipanalyzer.util.{DateUtil, StringUtil, DBUtil}
 import org.jsoup.Jsoup
 
 import scala.util.parsing.json.JSON

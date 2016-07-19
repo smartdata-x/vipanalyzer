@@ -1,7 +1,6 @@
 package com.kunyan.vipanalyzer.task.content
 
 import java.sql.Connection
-
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.util.DBUtil

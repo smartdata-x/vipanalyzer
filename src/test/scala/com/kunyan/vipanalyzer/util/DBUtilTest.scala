@@ -1,6 +1,5 @@
-package com.kunyan.vipanalyzer.task
+package com.kunyan.vipanalyzer.util
 
-import com.kunyan.vipanalyzer.DBUtil
 import org.scalatest.{Matchers, FlatSpec}
 
 /**

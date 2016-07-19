@@ -1,5 +1,6 @@
 package com.kunyan.vipanalyzer.parser.article
 
+import com.kunyan.vipanalyzer.logger.VALogger
 import org.jsoup.Jsoup
 import scala.collection.mutable.ListBuffer
 

@@ -2,11 +2,10 @@ package com.kunyan.vipanalyzer.task.snowball
 
 
 import java.sql.DriverManager
-
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.parser.SnowBallParser
-import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
+import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil}
 import org.apache.log4j.{Level, LogManager}
 
 import scala.io.Source

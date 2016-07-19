@@ -3,12 +3,12 @@ package com.kunyan.vipanalyzer.parser
 import java.sql.DriverManager
 import java.text.SimpleDateFormat
 
+import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil}
 import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser.streaming.TaogubaStreamingParser
-import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
 import org.apache.log4j.{Level, LogManager}
 import org.jsoup.Jsoup
 

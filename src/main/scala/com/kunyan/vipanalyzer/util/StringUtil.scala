@@ -14,13 +14,17 @@ object StringUtil {
     val json = "{\"id\":\"\", \"attrid\":\"%d\", \"cookie\":\"\", \"referer\":\"\", \"url\":\"%s\", \"timestamp\":\"%s\", \"result\":\"%d\"}"
 
     val message = json.format(platform, url, DateUtil.getDateString, result)
+
     VALogger.warn(message)
+
     message
   }
 
   def toJson(attrId: String, islogin: Int, url: String): String = {
+
     val json = "{\"id\":%s, \"islogin\":%d,\"attrid\":%s, \"depth\":%d, \"cur_depth\":%d, \"method\":%s, \"url\":\"%s\"}"
     json.format(new Date().getTime.toString, islogin, attrId, 2, 2, "2", url)
+
   }
 
 }

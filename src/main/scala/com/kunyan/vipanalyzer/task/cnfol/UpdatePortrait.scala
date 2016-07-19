@@ -1,7 +1,6 @@
 package com.kunyan.vipanalyzer.task.cnfol
 
 import java.sql.DriverManager
-
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger

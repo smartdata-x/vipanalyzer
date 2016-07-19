@@ -1,11 +1,10 @@
 package com.kunyan.vipanalyzer.task.common
 
 import java.sql.DriverManager
-
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.parser.article._
-import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
+import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil}
 import com.kunyandata.nlpsuit.summary.SummaryExtractor
 
 import scala.xml.XML
