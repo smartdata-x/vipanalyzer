@@ -81,6 +81,7 @@ object Scheduler {
     messages.map(_._2).filter(_.length > 0).foreachRDD(rdd => {
 
       rdd.foreach(message => {
+
         analyzer(message, connectionsBr.value, sendTopic, snowBallTopic,
           extractSummaryConfiguration,
           stopWordsBr.value,
@@ -89,7 +90,9 @@ object Scheduler {
           keyWordDictBr.value,
           kyConf
         )
-      })
+
+      }
+      )
     })
 
     ssc.start()
@@ -130,8 +133,6 @@ object Scheduler {
           case id if id == Platform.CNFOL.id =>
             CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
-            VALogger.warn("ENTER TAOGUBA")
-            VALogger.warn("Taoguba gets url [" + result._1 + "]")
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic,
               stopWords, classModels, sentimentModels, keyWordDict, kyConf,summaryExtraction)
           case id if id == Platform.MOER.id =>

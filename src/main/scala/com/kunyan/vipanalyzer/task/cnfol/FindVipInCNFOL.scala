@@ -1,12 +1,11 @@
 package com.kunyan.vipanalyzer.task.cnfol
 
 import java.sql.DriverManager
-
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser.CNFOLParser
-import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
+import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil}
 import kafka.serializer.StringDecoder
 import org.apache.log4j.{Level, LogManager}
 import org.apache.spark.SparkConf

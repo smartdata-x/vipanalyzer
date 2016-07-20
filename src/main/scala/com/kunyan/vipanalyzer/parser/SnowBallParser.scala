@@ -1,11 +1,11 @@
 package com.kunyan.vipanalyzer.parser
 
+import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil}
 import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser.streaming.SnowballStreamingParser
-import com.kunyan.vipanalyzer.util.{DBUtil, StringUtil}
 
 import scala.util.parsing.json.JSON
 

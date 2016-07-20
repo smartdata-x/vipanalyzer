@@ -3,12 +3,12 @@ package com.kunyan.vipanalyzer.parser
 import java.sql.DriverManager
 import java.text.SimpleDateFormat
 
+import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil, DateUtil}
 import com.kunyan.vipanalyzer.Scheduler
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
 import com.kunyan.vipanalyzer.parser.streaming.MoerStreamingParser
-import com.kunyan.vipanalyzer.util.{DateUtil, DBUtil, StringUtil}
 import org.jsoup.Jsoup
 
 import scala.xml.Elem

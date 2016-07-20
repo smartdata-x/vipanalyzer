@@ -1,6 +1,6 @@
 package com.kunyan.vipanalyzer.util
 
-import java.sql.{PreparedStatement, Connection, CallableStatement, DriverManager}
+import java.sql.{CallableStatement, DriverManager, PreparedStatement}
 
 import com.ibm.icu.text.CharsetDetector
 import com.kunyan.vipanalyzer.Scheduler
@@ -173,10 +173,12 @@ object DBUtil {
 
       prep.setString(1, userId)
       prep.setString(2, title)
+
       if (recommend)
         prep.setInt(3, 1)
       else
         prep.setInt(3, 0)
+
       prep.setInt(4, read)
       prep.setInt(5, comment)
       prep.setString(6, url)
@@ -504,10 +506,12 @@ object DBUtil {
 
     var summary: String = ""
 
-    if (content.length > number) {
+    if (content.length > number && number >= 0) {
       summary = content.substring(0, number)
-    } else {
+    } else if (content.length < number) {
       summary = content
+    } else {
+      println("索引错误，结果不存在")
     }
 
     summary

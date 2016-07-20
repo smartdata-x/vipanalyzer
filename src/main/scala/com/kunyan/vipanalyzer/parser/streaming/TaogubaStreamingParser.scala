@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
-import com.kunyan.vipanalyzer.util.{DBUtil, RedisUtil}
+import com.kunyan.vipanalyzer.util.{RedisUtil, DBUtil}
 import com.kunyandata.nlpsuit.classification.Bayes
 import com.kunyandata.nlpsuit.sentiment.PredictWithNb
 import com.kunyandata.nlpsuit.util.{TextPreprocessing, KunyanConf}
@@ -80,7 +80,6 @@ object TaogubaStreamingParser {
                 val timeStamp = fm.parse(date).getTime
 
                 val identifier = timeStamp
-                println(s"time is $timeStamp")
 
                 if (i == 0) {
 
@@ -88,8 +87,6 @@ object TaogubaStreamingParser {
 
                   if (identifier > lastValue) {
 
-                    VALogger.warn("identifier : " + identifier + " \n lastValue: " + lastValue)
-                    VALogger.warn("Put new identifier to the redis")
                     lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, identifier.toString)
 
                   } else {
@@ -99,11 +96,8 @@ object TaogubaStreamingParser {
                 }
 
                 if (identifier <= lastValue) {
-
-                  VALogger.warn("identifier : " + identifier + " \n lastValue: " + lastValue)
                   VALogger.warn("Redis equal value : break")
                   break()
-
                 }
 
                 val userID = value.getOrElse("userID", "")
@@ -128,8 +122,6 @@ object TaogubaStreamingParser {
 
                   val url = "http://www.taoguba.com.cn/Article" + "/" + objectID + "/" + otherID
                   val stock = ""
-
-                  VALogger.warn(s"Taoguba inserts Data $userID, $title, $url, $timeStamp, $stock")
 
                   val sqlFlag = DBUtil.insertCall(cstmtArticle, userID, title, 0, 0, url, timeStamp, stock)
 
@@ -234,13 +226,11 @@ object TaogubaStreamingParser {
         stock = DBUtil.getNewStock(categories._1, keyWordDict("stockDict"))
 
       stock = DBUtil.getLastSignData(DBUtil.interceptData(stock, 500), "&")
-      VALogger.warn(s"Taoguba begins to insert digest to mysql and data to aritcle_info:$digest,$summary,$stock")
       val digestFlag = DBUtil.insertCall(cstmtDigest, url, digest, summary, stock) // 插入article_info digest and summary and stock
 
       //插入news_info 数据
       if (digestFlag) {
 
-        VALogger.warn(s"Taoguba begins to insert digest to mysql and data to news_info $newsType, $Platform.TAOGUBA.id,$title, $url, $time, $categories._2, $categories._3, $categories._1, $newDigest, $summary, $senti,$Platform.TAOGUBA.toString")
         val newsFlag = DBUtil.insertNewsToMysql(newsMysqlStatement, newsType, Platform.TAOGUBA.id, title, url, time, categories._2, categories._3, categories._1, newDigest, summary, senti, System.currentTimeMillis(), Platform.TAOGUBA.toString)
 
         if (!newsFlag) {

@@ -1,10 +1,10 @@
 package com.kunyan.vipanalyzer.parser.streaming
 
 import java.util.Date
+import com.kunyan.vipanalyzer.util.{StringUtil, RedisUtil, DBUtil}
 import com.kunyan.vipanalyzer.config.Platform
 import com.kunyan.vipanalyzer.db.LazyConnections
 import com.kunyan.vipanalyzer.logger.VALogger
-import com.kunyan.vipanalyzer.util.{StringUtil, DBUtil, RedisUtil}
 import org.jsoup.Jsoup
 import scala.util.control.Breaks._
 import scala.util.parsing.json.JSON
