@@ -1,6 +1,6 @@
 ﻿# VIPANALYZER 项目介绍
 
-
+---------------------------------
 ##目前平台
 > * 雪球    
 > * 中金博客  
@@ -11,7 +11,7 @@
 ## Kafka ** Topic ** 说明
 > 1、  `self_media`  
 
-> Spark 从服务端接收这个topic的消息,根据消息获取表名 和rowkey,spark 从hbase表里取数据进行解析。所有平台都是从这个topic获取
+> Spark 从服务端接收这个topic的消息,根据消息获取表名 和rowkey,spark 从hbase表里取数据进行解析，所有平台都是从这个topic获取。
 
 > 2、 `newsparser_news`   
 
@@ -21,20 +21,6 @@
 
 > Spark 解析出数据后，把消息发送给服务端，这个消息适用平台只有雪球。
 
-####流程图
-```flow
-st=>start: Start
-op=>operation: 服务端通过self_media 发送给spark端
-opreceive=>operation: spark端接收之后进行解析，然后发送
-cond=>condition: 雪球 yes or no 
-m=>operation: 其它四个平台通过newsparser_news发送
-opduration=>operation: 通过newsparser_duration发送
-e=>end
-
-st->op->opreceive->cond
-cond(yes)->opduration->e
-cond(no)->m->e
-```
 ---------------------------------
 ##各平台解析发送消息格式
 
@@ -49,6 +35,8 @@ cond(no)->m->e
 | method   | string  |  判断网页链接是Get还是Post请求，如果是post值为1，Get 值为2 |
 | url    | string   |  spark解析获取的新闻url  |
 
+
+---------------------------------
 ### 各个平台解析详情介绍
 > | 平台中文名称      |  平台号   |  Spark解析获取插入数据库的字段  |备注| 爬取方式|
 | --------  | :-----: | :---- |:---- |:---- |
