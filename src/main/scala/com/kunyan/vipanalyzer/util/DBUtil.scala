@@ -318,45 +318,6 @@ object DBUtil {
 
   }
 
-  def insert(lazyConn: LazyConnections, params: Any*): Unit = {
-
-    val prep = lazyConn.preparedStatement
-
-    try {
-
-      for (i <- params.indices) {
-
-        val param = params(i)
-
-        param match {
-          case param: String =>
-            prep.setString(i + 1, param)
-          case param: Int =>
-            prep.setInt(i + 1, param)
-          case param: Boolean =>
-            prep.setBoolean(i + 1, param)
-          case param: Long =>
-            prep.setLong(i + 1, param)
-          case param: Double =>
-            prep.setDouble(i + 1, param)
-          case _ =>
-            VALogger.error("Unknown Type")
-
-        }
-      }
-
-      prep.executeUpdate
-
-    } catch {
-
-      case e: Exception =>
-        VALogger.error("向MySQL插入数据失败")
-        VALogger.exception(e)
-
-    }
-
-  }
-
   def insertCall(call: CallableStatement, params: Any*): Boolean = {
 
     try {
@@ -394,6 +355,45 @@ object DBUtil {
         VALogger.exception(e)
 
         false
+    }
+
+  }
+
+  def insert(lazyConn: LazyConnections, params: Any*): Unit = {
+
+    val prep = lazyConn.preparedStatement
+
+    try {
+
+      for (i <- params.indices) {
+
+        val param = params(i)
+
+        param match {
+          case param: String =>
+            prep.setString(i + 1, param)
+          case param: Int =>
+            prep.setInt(i + 1, param)
+          case param: Boolean =>
+            prep.setBoolean(i + 1, param)
+          case param: Long =>
+            prep.setLong(i + 1, param)
+          case param: Double =>
+            prep.setDouble(i + 1, param)
+          case _ =>
+            VALogger.error("Unknown Type")
+
+        }
+      }
+
+      prep.executeUpdate
+
+    } catch {
+
+      case e: Exception =>
+        VALogger.error("向MySQL插入数据失败")
+        VALogger.exception(e)
+
     }
 
   }

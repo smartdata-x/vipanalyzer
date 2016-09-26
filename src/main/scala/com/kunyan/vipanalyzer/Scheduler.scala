@@ -100,7 +100,7 @@ object Scheduler {
   }
 
   def analyzer(message: String, lazyConn: LazyConnections, topic: String, snowBallTopic: String,
-               summaryExtraction:(String,Int),
+               summaryExtraction: (String, Int),
                stopWords: Array[String],
                classModels: scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, scala.collection.Map[scala.Predef.String, java.io.Serializable]]],
                sentimentModels: scala.Predef.Map[scala.Predef.String, scala.Any],
@@ -134,7 +134,7 @@ object Scheduler {
             CnfolStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.TAOGUBA.id =>
             TaogubaStreamingParser.parse(result._1, result._2, lazyConn, topic,
-              stopWords, classModels, sentimentModels, keyWordDict, kyConf,summaryExtraction)
+              stopWords, classModels, sentimentModels, keyWordDict, kyConf, summaryExtraction)
           case id if id == Platform.MOER.id =>
             MoerStreamingParser.parse(result._1, result._2, lazyConn, topic)
           case id if id == Platform.WEIBO.id =>

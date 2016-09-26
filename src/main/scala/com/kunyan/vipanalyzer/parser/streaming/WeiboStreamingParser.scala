@@ -26,6 +26,7 @@ object WeiboStreamingParser {
 
     val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertWeiboNewArticle(?,?,?,?,?,?,?,?)}")
 
+
     try {
 
       var index = 0
@@ -43,9 +44,7 @@ object WeiboStreamingParser {
       val jsonInfo = JSON.parseFull(result)
 
       if (jsonInfo.isEmpty) {
-
         VALogger.error("\"JSON parse value is empty,please have a check!\"")
-
       } else {
 
         jsonInfo match {
@@ -77,7 +76,6 @@ object WeiboStreamingParser {
                 if (i == 0) {
 
                   if (lastURL != latestURL) {
-
                     lazyConn.jedisHset(RedisUtil.REDIS_HASH_NAME, pageUrl, latestURL)
                   } else {
                     break()
@@ -145,7 +143,12 @@ object WeiboStreamingParser {
                   var repeatContent = ""
 
                   if (repeat.size >= 6) {
+
                     repeatContent = repeat.get(5).text()
+
+                    if (repeatContent.trim == "ñ")
+                      repeatContent = repeat.get(6).text()
+
                   } else {
                     repeatContent = 0.toString
                   }
@@ -157,8 +160,8 @@ object WeiboStreamingParser {
                   val like = botChild.select("li span.pos em")
                   var likeContent = ""
 
-                  if (like.size >= 7) {
-                    likeContent = like.get(6).text()
+                  if (like.size >= 8) {
+                    likeContent = like.get(7).text()
                   } else {
                     likeContent = 0.toString
                   }
