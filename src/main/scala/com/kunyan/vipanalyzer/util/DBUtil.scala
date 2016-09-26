@@ -318,6 +318,7 @@ object DBUtil {
 
   }
 
+
   def insert(lazyConn: LazyConnections, params: Any*): Unit = {
 
     val prep = lazyConn.preparedStatement

@@ -23,7 +23,6 @@ object CnfolStreamingParser {
 
     val doc = Jsoup.parse(html, "UTF-8")
     val list = doc.select("div#Tab1 div.TabItem ul li")
-
     val cstmt = lazyConn.mysqlConn.prepareCall("{call proc_InsertCNFOLNewArticle(?,?,?,?,?,?,?,?)}")
 
     val lastTitle = lazyConn.jedisHget(RedisUtil.REDIS_HASH_NAME, pageUrl)

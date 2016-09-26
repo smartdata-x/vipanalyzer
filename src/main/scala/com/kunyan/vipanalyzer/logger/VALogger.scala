@@ -8,8 +8,8 @@ import org.apache.log4j.{BasicConfigurator, Logger, PropertyConfigurator}
 object VALogger {
 
   val logger = Logger.getLogger("VIP analyzer")
-  BasicConfigurator.configure()
 
+  BasicConfigurator.configure()
   PropertyConfigurator.configure("/home/vip/conf/log4j.properties")
 
   def exception(e: Exception) = {
@@ -22,7 +22,7 @@ object VALogger {
   }
 
   def warn(msg: String): Unit = {
-//    logger.warn(msg)
+    //    logger.warn(msg)
     println(msg)
   }
 
